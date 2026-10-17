@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 8080;
 
 // Credenciales de login (configura en variables de entorno de Railway)
 const WEB_USER = process.env.WEB_USER || 'admin';
-const WEB_PASS = process.env.WEB_PASS || 'hyperstock2024';
+const WEB_PASS = process.env.WEB_PASS || '12';
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
