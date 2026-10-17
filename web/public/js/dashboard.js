@@ -99,13 +99,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadHome();
   initEmojiGrids();
   renderDraftBar();
-  // Show btn options based on default
-  document.getElementById('editor-btn-type').addEventListener('change', () => {
-    const val = document.getElementById('editor-btn-type').value;
-    document.getElementById('btn-options').style.display = val === 'button' ? 'block' : 'none';
-    updatePreview();
-  });
-  // Close emoji panels on outside click
+
+  // Solo conectar el listener si el elemento existe
+  const btnTypeEl = document.getElementById('editor-btn-type');
+  if (btnTypeEl) {
+    btnTypeEl.addEventListener('change', () => {
+      const val = btnTypeEl.value;
+      const btnOpts = document.getElementById('btn-options');
+      if (btnOpts) btnOpts.style.display = val === 'button' ? 'block' : 'none';
+      updatePreview();
+    });
+  }
+
+  // Cerrar emoji panels al hacer clic fuera
   document.addEventListener('click', e => {
     if (!e.target.closest('.emoji-picker-wrap')) closeAllEmojiPanels();
   });
@@ -164,40 +170,44 @@ function showPage(name) {
 
 // ─── HOME ─────────────────────────────────────────────────────────────────
 async function loadHome() {
-  const g = await api('/api/guild');
-  if (!g) return;
+  try {
+    const g = await api('/api/guild');
+    if (!g || g.error) return;
 
-  $('guild-name').textContent   = g.name;
-  $('meta-members').textContent = g.memberCount.toLocaleString();
-  $('meta-channels').textContent= g.channelCount;
-  $('meta-roles').textContent   = g.roleCount;
-  $('meta-created').textContent = new Date(g.createdAt).toLocaleDateString('es');
-  $('boost-badge').textContent  = `🚀 Tier ${g.boostTier} · ${g.boostCount} boosts`;
+    $('guild-name').textContent   = g.name || 'HyperStock';
+    $('meta-members').textContent = (g.memberCount ?? '—').toLocaleString();
+    $('meta-channels').textContent= g.channelCount ?? '—';
+    $('meta-roles').textContent   = g.roleCount ?? '—';
+    $('meta-created').textContent = g.createdAt ? new Date(g.createdAt).toLocaleDateString('es') : '—';
+    $('boost-badge').textContent  = `🚀 Tier ${g.boostTier ?? 0} · ${g.boostCount ?? 0} boosts`;
 
-  $('stat-members').textContent  = g.memberCount.toLocaleString();
-  $('stat-channels').textContent = g.channelCount;
-  $('stat-roles').textContent    = g.roleCount;
-  $('stat-uptime').textContent   = g.uptime;
-  $('stat-boosts').textContent   = g.boostCount;
-  $('stat-ping').textContent     = g.ping;
+    $('stat-members').textContent  = (g.memberCount ?? '—').toLocaleString?.() ?? g.memberCount;
+    $('stat-channels').textContent = g.channelCount ?? '—';
+    $('stat-roles').textContent    = g.roleCount ?? '—';
+    $('stat-uptime').textContent   = g.uptime ?? '—';
+    $('stat-boosts').textContent   = g.boostCount ?? '—';
+    $('stat-ping').textContent     = g.ping ?? '—';
 
-  $('guild-info').innerHTML = [
-    ['👑','Owner ID', g.ownerId],
-    ['📢','Canales', g.channelCount],
-    ['🎭','Roles', g.roleCount],
-    ['🚀','Boost Tier', g.boostTier],
-    ['⚡','Ping', g.ping],
-    ['📅','Creado', new Date(g.createdAt).toLocaleDateString('es')],
-  ].map(([ico,k,v])=>`
-    <div class="info-row">
-      <span class="info-key">${ico} ${k}</span>
-      <span class="info-val">${v}</span>
-    </div>`).join('');
+    $('guild-info').innerHTML = [
+      ['👑','Owner ID', g.ownerId ?? '—'],
+      ['📢','Canales', g.channelCount ?? '—'],
+      ['🎭','Roles', g.roleCount ?? '—'],
+      ['🚀','Boost Tier', g.boostTier ?? 0],
+      ['⚡','Ping', g.ping ?? '—'],
+      ['📅','Creado', g.createdAt ? new Date(g.createdAt).toLocaleDateString('es') : '—'],
+    ].map(([ico,k,v])=>`
+      <div class="info-row">
+        <span class="info-key">${ico} ${k}</span>
+        <span class="info-val">${v}</span>
+      </div>`).join('');
 
-  const logs = await api('/api/logs?limit=6');
-  $('home-logs').innerHTML = logs?.length
-    ? logs.map(renderLogItem).join('')
-    : '<div class="empty-state"><div class="empty-ico">📋</div><p>Sin actividad reciente</p></div>';
+    const logs = await api('/api/logs?limit=6');
+    $('home-logs').innerHTML = logs?.length
+      ? logs.map(renderLogItem).join('')
+      : '<div class="empty-state"><div class="empty-ico">📋</div><p>Sin actividad reciente</p></div>';
+  } catch(e) {
+    console.error('[loadHome]', e);
+  }
 }
 
 // ─── CHANNELS ─────────────────────────────────────────────────────────────
