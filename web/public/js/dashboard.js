@@ -1172,63 +1172,77 @@ document.addEventListener('DOMContentLoaded', () => {
    BOT EN VOZ
    ═══════════════════════════════════════════════════════════════════════ */
 async function loadVoice() {
-  const data = await api('/api/voice-channels');
-  const list = $('voice-list');
+  const list    = $('voice-list');
+  const countEl = $('voice-ch-count');
   if (!list) return;
 
-  // ── Estado actual del bot ──────────────────────────────────────
-  const titleEl   = $('voice-status-title');
-  const subEl     = $('voice-status-sub');
-  const icoEl     = $('voice-status-ico');
-  const badgeEl   = $('voice-connected-badge');
-  const eqEl      = $('voice-eq');
-  const leaveBtn  = $('btn-leave-voice');
-  const countEl   = $('voice-ch-count');
+  // Mostrar skeleton mientras carga
+  list.innerHTML = `
+    <div class="voice-ch-item"><div class="skeleton" style="height:20px;width:60%;margin:4px 0"></div></div>
+    <div class="voice-ch-item"><div class="skeleton" style="height:20px;width:45%;margin:4px 0"></div></div>
+    <div class="voice-ch-item"><div class="skeleton" style="height:20px;width:55%;margin:4px 0"></div></div>`;
 
-  const current = data?.currentChannel;
+  const data = await api('/api/voice-channels');
+
+  // ── UI de estado ────────────────────────────────────────────────
+  const titleEl  = $('voice-status-title');
+  const subEl    = $('voice-status-sub');
+  const icoEl    = $('voice-status-ico');
+  const badgeEl  = $('voice-connected-badge');
+  const eqEl     = $('voice-eq');
+  const leaveBtn = $('btn-leave-voice');
+  const current  = data?.currentChannel;
 
   if (current) {
-    if (titleEl) titleEl.textContent = `Conectado en #${current.name}`;
-    if (subEl)   subEl.textContent   = 'El bot está activo en este canal ahora mismo';
-    if (icoEl)   icoEl.textContent   = '🎙️';
-    if (badgeEl) badgeEl.style.display = 'flex';
-    if (eqEl)    eqEl.style.display    = 'flex';
+    if (titleEl)  titleEl.textContent  = `Conectado en: #${current.name}`;
+    if (subEl)    subEl.textContent    = 'El bot está activo en este canal ahora mismo';
+    if (icoEl)    icoEl.textContent    = '🎙️';
+    if (badgeEl)  badgeEl.style.display = 'flex';
+    if (eqEl)     eqEl.style.display    = 'flex';
     if (leaveBtn) leaveBtn.style.display = '';
   } else {
-    if (titleEl) titleEl.textContent = 'Bot desconectado';
-    if (subEl)   subEl.textContent   = 'No está en ningún canal de voz';
-    if (icoEl)   icoEl.textContent   = '🔊';
-    if (badgeEl) badgeEl.style.display = 'none';
-    if (eqEl)    eqEl.style.display    = 'none';
+    if (titleEl)  titleEl.textContent  = 'Bot desconectado';
+    if (subEl)    subEl.textContent    = 'No está en ningún canal de voz';
+    if (icoEl)    icoEl.textContent    = '🔊';
+    if (badgeEl)  badgeEl.style.display = 'none';
+    if (eqEl)     eqEl.style.display    = 'none';
     if (leaveBtn) leaveBtn.style.display = 'none';
   }
 
-  // ── Lista de canales ───────────────────────────────────────────
+  // ── Lista de canales — SIEMPRE todos visibles ────────────────────
   if (!data?.channels?.length) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-ico">🔊</div><p>No hay canales de voz en el servidor</p></div>';
+    list.innerHTML = `
+      <div class="empty-state" style="padding:32px">
+        <div class="empty-ico">🔊</div>
+        <p>No hay canales de voz en el servidor</p>
+        <p class="t-xs t-dim mt-8">${data?.error ? 'Error: ' + data.error : 'Verifica los permisos del bot'}</p>
+      </div>`;
+    if (countEl) countEl.textContent = '0 canales';
     return;
   }
 
-  if (countEl) countEl.textContent = `${data.channels.length} canales`;
+  if (countEl) countEl.textContent = `${data.channels.length} canal${data.channels.length !== 1 ? 'es' : ''}`;
 
   list.innerHTML = data.channels.map(ch => {
-    const isCurrent = current?.id === ch.id;
+    const isHere = ch.isCurrent || current?.id === ch.id;
+    // Contar miembros sin incluir el bot
+    const humanMembers = isHere ? Math.max(0, ch.members - 1) : ch.members;
     return `
-    <div class="voice-ch-item ${isCurrent ? 'is-current' : ''}">
+    <div class="voice-ch-item ${isHere ? 'is-current' : ''}">
       <div class="voice-ch-left">
-        <div class="voice-ch-ico">${isCurrent ? '🎙️' : '🔊'}</div>
+        <div class="voice-ch-ico">${isHere ? '🎙️' : '🔊'}</div>
         <div>
           <div class="voice-ch-name">${escHtml(ch.name)}</div>
-          <div class="voice-ch-meta">${isCurrent ? '🟢 Bot aquí' : 'Canal de voz'}</div>
+          <div class="voice-ch-meta">${isHere ? '🟢 Bot conectado aquí' : 'Canal de voz disponible'}</div>
         </div>
       </div>
       <div class="voice-ch-right">
-        ${ch.members > 0
-          ? `<span class="voice-members-badge">👥 ${ch.members}</span>`
-          : '<span class="voice-members-badge t-dim">vacío</span>'
+        ${humanMembers > 0
+          ? `<span class="voice-members-badge">👥 ${humanMembers} miembro${humanMembers !== 1 ? 's' : ''}</span>`
+          : `<span class="voice-members-badge t-dim">Vacío</span>`
         }
-        ${isCurrent
-          ? `<button class="btn btn-danger btn-sm" onclick="botLeaveVoice()">🔇 Salir</button>`
+        ${isHere
+          ? `<button class="btn btn-danger btn-sm" onclick="botLeaveVoice()">🔇 Desconectar</button>`
           : `<button class="btn btn-primary btn-sm" onclick="botJoinVoice('${ch.id}','${escHtml(ch.name)}')">🔊 Conectar</button>`
         }
       </div>
@@ -1240,16 +1254,21 @@ async function botJoinVoice(channelId, name) {
   const d = await api('/api/voice/join', 'POST', { channelId });
   if (d?.success) {
     toast(`✅ Bot conectado en #${name}`, 'success');
-    loadVoice();
+    // Pequeño delay para que Discord procese el estado antes de recargar
+    setTimeout(loadVoice, 800);
   } else {
-    toast('❌ ' + (d?.error || 'Error'), 'error');
+    toast('❌ ' + (d?.error || 'Error al conectar'), 'error');
   }
 }
 
 async function botLeaveVoice() {
   const d = await api('/api/voice/leave', 'POST', {});
-  if (d?.success) { toast('✅ Bot desconectado', 'info'); loadVoice(); }
-  else toast('❌ ' + (d?.error || 'Error'), 'error');
+  if (d?.success) {
+    toast('✅ Bot desconectado del canal de voz', 'info');
+    setTimeout(loadVoice, 800);
+  } else {
+    toast('❌ ' + (d?.error || 'Error al desconectar'), 'error');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

@@ -295,42 +295,47 @@ app.get('/api/voice-channels', requireAuth, async (req, res) => {
     const client = app.get('discordClient');
     const guild  = await client.guilds.fetch(process.env.GUILD_ID);
     await guild.channels.fetch();
-    await guild.members.fetch(); // necesario para detectar el bot
 
-    const channels = guild.channels.cache
-      .filter(c => c.type === 2) // GuildVoice
-      .sort((a, b) => a.position - b.position)
-      .map(c => ({
-        id:      c.id,
-        name:    c.name,
-        members: c.members ? c.members.size : 0,
-      }));
-
-    // Detectar canal de voz del bot — método 1: voice state del miembro
-    let currentChannel = null;
+    // Detectar dónde está el bot usando @discordjs/voice (más fiable)
+    let currentChannelId = null;
     try {
-      const me = guild.members.me || await guild.members.fetchMe();
-      if (me?.voice?.channelId) {
-        const ch = guild.channels.cache.get(me.voice.channelId);
-        if (ch) currentChannel = { id: ch.id, name: ch.name };
+      const { getVoiceConnection } = require('@discordjs/voice');
+      const conn = getVoiceConnection(guild.id);
+      if (conn?.joinConfig?.channelId) {
+        currentChannelId = conn.joinConfig.channelId;
       }
     } catch (_) {}
 
-    // Método 2: conexión activa de @discordjs/voice (más fiable)
-    if (!currentChannel) {
+    // Fallback: voice state del miembro bot
+    if (!currentChannelId) {
       try {
-        const { getVoiceConnection } = require('@discordjs/voice');
-        const conn = getVoiceConnection(process.env.GUILD_ID);
-        if (conn && conn.joinConfig?.channelId) {
-          const ch = guild.channels.cache.get(conn.joinConfig.channelId);
-          if (ch) currentChannel = { id: ch.id, name: ch.name };
-        }
+        const me = await guild.members.fetchMe({ force: false });
+        if (me?.voice?.channelId) currentChannelId = me.voice.channelId;
       } catch (_) {}
     }
 
+    // Todos los canales de voz — SIEMPRE incluidos aunque el bot esté en uno
+    const channels = guild.channels.cache
+      .filter(c => c.type === 2)
+      .sort((a, b) => a.position - b.position)
+      .map(c => ({
+        id:        c.id,
+        name:      c.name,
+        members:   c.members ? c.members.size : 0,
+        isCurrent: c.id === currentChannelId,
+      }));
+
+    const currentChannel = currentChannelId
+      ? (() => {
+          const ch = guild.channels.cache.get(currentChannelId);
+          return ch ? { id: ch.id, name: ch.name } : null;
+        })()
+      : null;
+
     res.json({ channels, currentChannel });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[voice-channels]', err.message);
+    res.status(500).json({ error: err.message, channels: [], currentChannel: null });
   }
 });
 
