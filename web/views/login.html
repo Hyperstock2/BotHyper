@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HyperStock - Login</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-logo">
+      <div class="logo-circle">⚡</div>
+      <h1>HyperStock</h1>
+      <p>Panel de Control</p>
+    </div>
+
+    <div id="error-msg" class="error-banner" style="display:none">
+      ❌ Usuario o contraseña incorrectos
+    </div>
+
+    <form class="login-form" action="/login" method="POST">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" name="username" placeholder="Ingresa tu usuario" required autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="password" placeholder="Ingresa tu contraseña" required />
+      </div>
+      <button type="submit" class="btn-login">Ingresar al Panel</button>
+    </form>
+
+    <p class="login-footer">HyperStock Bot Panel © 2024</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error')) {
+      document.getElementById('error-msg').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
