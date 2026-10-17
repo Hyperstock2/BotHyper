@@ -750,3 +750,340 @@ tbody td{padding:12px 16px;vertical-align:middle}
   .field-2,.field-3{grid-template-columns:1fr}
   .login-card{padding:32px 22px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PATCH v4.1 — Banner fondo, logo, partículas blancas, voz, diseño+
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── BANNER DESVANECIDO COMO FONDO DEL CONTENT ────────────────────────── */
+.content {
+  position: relative;
+  z-index: 1;
+}
+.content::before {
+  content: '';
+  position: fixed;
+  top: var(--tb-h);
+  left: var(--sb-w);
+  right: 0;
+  bottom: 0;
+  background:
+    url('https://i.postimg.cc/nLw8Vvnz/a1f47cf3-3f86-4ded-aabf-05d5117a5fb9.jpg')
+    center/cover no-repeat;
+  opacity: 0.032;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── PARTÍCULAS BLANCAS PEQUEÑAS EN CARDS ─────────────────────────────── */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.18) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 75%, rgba(255,255,255,0.12) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 35%, rgba(255,255,255,0.15) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,0.10) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.14) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 55%, rgba(255,255,255,0.09) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 60%, rgba(255,255,255,0.12) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 90%, rgba(255,255,255,0.10) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 45%, rgba(255,255,255,0.08) 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  88%, rgba(255,255,255,0.11) 0%, transparent 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Asegurar que el contenido de la card esté sobre las partículas */
+.card > * { position: relative; z-index: 1; }
+
+/* Partículas animadas flotando (muy sutiles) */
+@keyframes dot-float {
+  0%,100% { transform: translate(0,0); opacity:.15; }
+  33%      { transform: translate(2px,-3px); opacity:.25; }
+  66%      { transform: translate(-2px,2px); opacity:.10; }
+}
+.card::before {
+  animation: dot-float 12s ease-in-out infinite;
+}
+
+/* ── SERVER BANNER — LOGO REAL ────────────────────────────────────────── */
+.server-ico-img {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--r4);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--br3);
+  z-index: 1;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  transition: transform var(--t-base);
+}
+.server-ico-img:hover { transform: scale(1.05); }
+
+/* Fallback si no hay imagen de guild */
+.server-ico-placeholder {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--r4);
+  background: var(--a1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  z-index: 1;
+  border: 2px solid var(--br3);
+}
+
+/* ── MEJORA TOPBAR — TÍTULO DE PÁGINA MÁS VISIBLE ────────────────────── */
+.topbar {
+  background: rgba(5,13,26,.95) !important;
+}
+.breadcrumb .cur {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--t1);
+}
+
+/* ── CARDS MEJORADAS — profundidad y bordes ───────────────────────────── */
+.card {
+  background: rgba(10,22,40,.88);
+  border: 1px solid rgba(59,130,246,.10);
+  backdrop-filter: blur(8px);
+}
+.card:hover {
+  border-color: rgba(59,130,246,.20);
+  box-shadow: 0 4px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* ── STAT CARDS — fondo y borde azul limpio ───────────────────────────── */
+.stat-card {
+  background: rgba(10,22,40,.9);
+  border: 1px solid rgba(59,130,246,.10);
+  backdrop-filter: blur(6px);
+}
+
+/* ── SIDEBAR MEJORADO ─────────────────────────────────────────────────── */
+.sidebar {
+  background: rgba(5,13,26,.97);
+  border-right: 1px solid rgba(59,130,246,.10);
+}
+
+/* ── NAV ACTIVE HIGHLIGHT MÁS VISIBLE ────────────────────────────────── */
+.nav-btn.active {
+  background: rgba(37,99,235,.18);
+  color: #93c5fd;
+  font-weight: 700;
+}
+.nav-btn:hover {
+  background: rgba(37,99,235,.10);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BOT EN VOZ — REDISEÑO COMPLETO
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Panel de estado actual del bot */
+.voice-status-card {
+  background: rgba(10,22,40,.9);
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--r4);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.voice-status-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(37,99,235,.06), transparent);
+  pointer-events: none;
+}
+.voice-status-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--a2), transparent);
+  opacity: .5;
+}
+.voice-status-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 1;
+}
+.voice-status-ico {
+  width: 46px; height: 46px;
+  border-radius: var(--r3);
+  background: var(--a-dim);
+  border: 1px solid var(--a-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.voice-status-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.voice-status-sub {
+  font-size: 12px;
+  color: var(--t3);
+  margin-top: 2px;
+}
+.voice-connected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34,197,94,.1);
+  border: 1px solid rgba(34,197,94,.2);
+  color: var(--green);
+  padding: 4px 12px;
+  border-radius: var(--r6);
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 1;
+}
+
+/* Canal de voz item mejorado */
+.voice-ch-item {
+  background: rgba(10,22,40,.7);
+  border: 1px solid rgba(59,130,246,.08);
+  border-radius: var(--r3);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all var(--t-fast);
+  position: relative;
+  overflow: hidden;
+}
+.voice-ch-item:hover {
+  border-color: var(--a-border);
+  background: rgba(37,99,235,.07);
+  transform: translateX(3px);
+}
+.voice-ch-item.is-current {
+  border-color: var(--green);
+  background: rgba(34,197,94,.06);
+}
+.voice-ch-item.is-current::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--green);
+  border-radius: 0 2px 2px 0;
+}
+.voice-ch-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.voice-ch-ico {
+  width: 32px; height: 32px;
+  border-radius: var(--r2);
+  background: rgba(59,130,246,.1);
+  border: 1px solid rgba(59,130,246,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.voice-ch-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--t1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.voice-ch-meta {
+  font-size: 11px;
+  color: var(--t3);
+  margin-top: 2px;
+}
+.voice-ch-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.voice-members-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--br1);
+  color: var(--t2);
+  padding: 3px 8px;
+  border-radius: var(--r6);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Equalizer animation para cuando el bot está conectado */
+.equalizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.eq-bar {
+  width: 3px;
+  background: var(--green);
+  border-radius: 2px;
+  animation: eq-bounce 1.2s ease-in-out infinite;
+}
+.eq-bar:nth-child(1) { animation-delay: 0s; }
+.eq-bar:nth-child(2) { animation-delay: .2s; }
+.eq-bar:nth-child(3) { animation-delay: .4s; }
+.eq-bar:nth-child(4) { animation-delay: .1s; }
+@keyframes eq-bounce {
+  0%,100% { height: 4px; }
+  50%      { height: 14px; }
+}
+
+/* ── MEJORA SERVER BANNER ─────────────────────────────────────────────── */
+.server-banner {
+  background: rgba(10,22,40,.92);
+  border: 1px solid rgba(59,130,246,.15);
+  position: relative;
+}
+.server-banner::before {
+  background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(59,130,246,.05), transparent);
+}
+
+/* ── TOPBAR TÍTULO DINÁMICO ───────────────────────────────────────────── */
+.topbar-page-icon {
+  width: 28px; height: 28px;
+  border-radius: var(--r2);
+  background: var(--a-dim);
+  border: 1px solid var(--a-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ── GENERAL MEJORA DE ESPACIADO ──────────────────────────────────────── */
+.page-title-h {
+  font-size: 21px;
+  background: linear-gradient(135deg, var(--t1) 0%, var(--a4) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────── */
+@media(max-width:768px) {
+  .content::before { left: 0; }
+  .voice-status-card { flex-wrap: wrap; gap: 12px; }
+}

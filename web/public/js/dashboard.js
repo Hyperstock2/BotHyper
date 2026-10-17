@@ -181,8 +181,17 @@ async function loadHome() {
     $('meta-created').textContent = g.createdAt ? new Date(g.createdAt).toLocaleDateString('es') : '—';
     $('boost-badge').textContent  = `🚀 Tier ${g.boostTier ?? 0} · ${g.boostCount ?? 0} boosts`;
 
-    $('stat-members').textContent  = (g.memberCount ?? '—').toLocaleString?.() ?? g.memberCount;
-    $('stat-channels').textContent = g.channelCount ?? '—';
+    // Logo real del servidor
+    const iconWrap = $('server-ico-wrap');
+    if (iconWrap) {
+      if (g.icon) {
+        iconWrap.innerHTML = `<img class="server-ico-img" src="${g.icon}" alt="${g.name}" onerror="this.parentElement.innerHTML='<div class=\\'server-ico-placeholder\\'>🏪</div>'"/>`;
+      } else {
+        iconWrap.innerHTML = `<div class="server-ico-placeholder">🏪</div>`;
+      }
+    }
+
+    $('stat-members').textContent  = (g.memberCount ?? '—').toLocaleString?.() ?? g.memberCount;    $('stat-channels').textContent = g.channelCount ?? '—';
     $('stat-roles').textContent    = g.roleCount ?? '—';
     $('stat-uptime').textContent   = g.uptime ?? '—';
     $('stat-boosts').textContent   = g.boostCount ?? '—';
@@ -1167,32 +1176,64 @@ async function loadVoice() {
   const list = $('voice-list');
   if (!list) return;
 
-  // Status actual
-  const statusEl = $('voice-status');
-  if (data?.currentChannel && statusEl) {
-    statusEl.style.display = 'flex';
-    $('voice-current-ch').textContent = data.currentChannel.name;
-  } else if (statusEl) {
-    statusEl.style.display = 'none';
+  // ── Estado actual del bot ──────────────────────────────────────
+  const titleEl   = $('voice-status-title');
+  const subEl     = $('voice-status-sub');
+  const icoEl     = $('voice-status-ico');
+  const badgeEl   = $('voice-connected-badge');
+  const eqEl      = $('voice-eq');
+  const leaveBtn  = $('btn-leave-voice');
+  const countEl   = $('voice-ch-count');
+
+  const current = data?.currentChannel;
+
+  if (current) {
+    if (titleEl) titleEl.textContent = `Conectado en #${current.name}`;
+    if (subEl)   subEl.textContent   = 'El bot está activo en este canal ahora mismo';
+    if (icoEl)   icoEl.textContent   = '🎙️';
+    if (badgeEl) badgeEl.style.display = 'flex';
+    if (eqEl)    eqEl.style.display    = 'flex';
+    if (leaveBtn) leaveBtn.style.display = '';
+  } else {
+    if (titleEl) titleEl.textContent = 'Bot desconectado';
+    if (subEl)   subEl.textContent   = 'No está en ningún canal de voz';
+    if (icoEl)   icoEl.textContent   = '🔊';
+    if (badgeEl) badgeEl.style.display = 'none';
+    if (eqEl)    eqEl.style.display    = 'none';
+    if (leaveBtn) leaveBtn.style.display = 'none';
   }
 
+  // ── Lista de canales ───────────────────────────────────────────
   if (!data?.channels?.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-ico">🔊</div><p>No hay canales de voz en el servidor</p></div>';
     return;
   }
 
-  list.innerHTML = data.channels.map(ch => `
-    <div class="voice-ch-item">
-      <div class="voice-ch-name">
-        🔊 ${escHtml(ch.name)}
-        ${ch.members > 0 ? `<span class="badge b-active" style="font-size:10px">${ch.members} miembro${ch.members > 1 ? 's' : ''}</span>` : ''}
+  if (countEl) countEl.textContent = `${data.channels.length} canales`;
+
+  list.innerHTML = data.channels.map(ch => {
+    const isCurrent = current?.id === ch.id;
+    return `
+    <div class="voice-ch-item ${isCurrent ? 'is-current' : ''}">
+      <div class="voice-ch-left">
+        <div class="voice-ch-ico">${isCurrent ? '🎙️' : '🔊'}</div>
+        <div>
+          <div class="voice-ch-name">${escHtml(ch.name)}</div>
+          <div class="voice-ch-meta">${isCurrent ? '🟢 Bot aquí' : 'Canal de voz'}</div>
+        </div>
       </div>
-      <div class="row-gap">
-        <span class="voice-ch-members">#${ch.id}</span>
-        <button class="btn btn-primary btn-sm" onclick="botJoinVoice('${ch.id}', '${escHtml(ch.name)}')">Conectar</button>
+      <div class="voice-ch-right">
+        ${ch.members > 0
+          ? `<span class="voice-members-badge">👥 ${ch.members}</span>`
+          : '<span class="voice-members-badge t-dim">vacío</span>'
+        }
+        ${isCurrent
+          ? `<button class="btn btn-danger btn-sm" onclick="botLeaveVoice()">🔇 Salir</button>`
+          : `<button class="btn btn-primary btn-sm" onclick="botJoinVoice('${ch.id}','${escHtml(ch.name)}')">🔊 Conectar</button>`
+        }
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function botJoinVoice(channelId, name) {

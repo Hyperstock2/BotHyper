@@ -92,7 +92,10 @@
       <div class="page active" id="page-home">
         <div class="server-banner">
           <div class="banner-bg-pattern"></div>
-          <div class="server-ico">🏪</div>
+          <div id="server-ico-wrap">
+            <!-- Logo real del servidor, cargado por JS -->
+            <div class="server-ico-placeholder">🏪</div>
+          </div>
           <div class="server-details">
             <div class="server-name" id="guild-name">HyperStock</div>
             <div class="server-meta-row">
@@ -660,23 +663,44 @@
         <div class="section-hdr row">
           <div>
             <div class="page-title-h">🔊 Bot en Canales de Voz</div>
-            <div class="page-sub">Mueve el bot a cualquier canal de voz del servidor · Solo Developer</div>
+            <div class="page-sub">Conecta el bot a cualquier canal de voz · Solo Developer</div>
           </div>
-          <button class="btn btn-danger btn-sm" onclick="botLeaveVoice()" id="btn-leave-voice">Desconectar Bot</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadVoice()">↻ Actualizar</button>
         </div>
 
-        <div class="bot-voice-status" id="voice-status" style="display:none">
-          <div class="bot-voice-indicator"></div>
-          <span class="t-sm">Bot conectado en: <strong id="voice-current-ch">—</strong></span>
+        <!-- Estado actual -->
+        <div class="voice-status-card">
+          <div class="voice-status-left">
+            <div class="voice-status-ico" id="voice-status-ico">🔊</div>
+            <div>
+              <div class="voice-status-title" id="voice-status-title">Bot desconectado</div>
+              <div class="voice-status-sub" id="voice-status-sub">No está en ningún canal de voz</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;z-index:1">
+            <div id="voice-eq" style="display:none">
+              <div class="equalizer">
+                <div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div>
+              </div>
+            </div>
+            <div class="voice-connected-badge" id="voice-connected-badge" style="display:none">
+              <span class="status-dot"></span> Conectado
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="botLeaveVoice()" id="btn-leave-voice" style="display:none">
+              🔇 Desconectar
+            </button>
+          </div>
         </div>
 
+        <!-- Lista de canales -->
         <div class="card">
           <div class="card-hdr">
             <div class="card-title"><div class="card-icon">📡</div> Canales de Voz Disponibles</div>
-            <button class="btn btn-ghost btn-sm" onclick="loadVoice()">↻ Actualizar</button>
+            <span class="t-xs t-dim" id="voice-ch-count"></span>
           </div>
-          <div class="voice-channels-list" id="voice-list">
-            <div class="empty-state"><div class="empty-ico">🔊</div><p>Cargando canales de voz...</p></div>
+          <div class="voice-channels-list" id="voice-list" style="display:flex;flex-direction:column;gap:6px">
+            <div class="empty-state"><div class="empty-ico">⏳</div><p>Cargando canales...</p></div>
           </div>
         </div>
       </div>
