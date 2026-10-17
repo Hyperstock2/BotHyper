@@ -7,523 +7,614 @@
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
-
-<!-- Background effects -->
-<div class="bg-noise"></div>
-<div class="orb orb-1" style="position:fixed"></div>
-<div class="orb orb-2" style="position:fixed"></div>
+<!-- Ambient background -->
+<div class="ambient"><div class="orb orb-a"></div><div class="orb orb-b"></div></div>
+<div class="mesh"></div>
 
 <div class="app">
 
-  <!-- ═══════════════════════════════════════════════════════════
-       SIDEBAR
-       ═══════════════════════════════════════════════════════════ -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon">⚡</div>
+  <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">⚡</div>
       <div>
-        <div class="brand-name">HyperStock</div>
-        <div class="brand-ver">Bot Panel v2.0</div>
+        <div class="sb-title">HyperStock</div>
+        <div class="sb-version">v3.0 · panel</div>
       </div>
     </div>
 
-    <div class="sidebar-body">
-      <div class="nav-section-label">General</div>
-      <button class="nav-item active" id="nav-home" onclick="showPage('home')">
-        <span class="nav-icon">🏠</span> Inicio
+    <div class="sb-body">
+      <div class="sb-group-label">General</div>
+      <button class="nav-btn active" id="nav-home" onclick="showPage('home')">
+        <span class="nav-ico">🏠</span> Inicio
       </button>
 
-      <div class="nav-section-label">Gestión</div>
-      <button class="nav-item" id="nav-embeds" onclick="showPage('embeds')">
-        <span class="nav-icon">📨</span> Enviar Embeds
+      <div class="sb-group-label">Gestión Discord</div>
+      <button class="nav-btn" id="nav-embeds" onclick="showPage('embeds')">
+        <span class="nav-ico">📨</span> Enviar Embeds
       </button>
-      <button class="nav-item" id="nav-editor" onclick="showPage('editor')">
-        <span class="nav-icon">✏️</span> Editor de Embeds
+      <button class="nav-btn" id="nav-editor" onclick="showPage('editor')">
+        <span class="nav-ico">✏️</span> Editor de Embeds
       </button>
-      <button class="nav-item" id="nav-tickets" onclick="showPage('tickets')">
-        <span class="nav-icon">🎫</span> Tickets
+      <button class="nav-btn" id="nav-tickets" onclick="showPage('tickets')">
+        <span class="nav-ico">🎫</span> Tickets
       </button>
 
-      <div class="nav-section-label" id="admin-section" style="display:none">Administración</div>
-      <button class="nav-item" id="nav-users" onclick="showPage('users')" style="display:none">
-        <span class="nav-icon">👥</span> Usuarios
+      <div class="sb-group-label hidden" id="admin-section">Admin</div>
+      <button class="nav-btn hidden" id="nav-users" onclick="showPage('users')">
+        <span class="nav-ico">👥</span> Usuarios
       </button>
-      <button class="nav-item" id="nav-security" onclick="showPage('security')" style="display:none">
-        <span class="nav-icon">🛡️</span> Seguridad
+      <button class="nav-btn hidden" id="nav-security" onclick="showPage('security')">
+        <span class="nav-ico">🛡️</span> Seguridad
       </button>
-      <button class="nav-item" id="nav-logs" onclick="showPage('logs')" style="display:none">
-        <span class="nav-icon">📋</span> Logs
-        <span class="nav-badge" id="log-badge" style="display:none">●</span>
+      <button class="nav-btn hidden" id="nav-logs" onclick="showPage('logs')">
+        <span class="nav-ico">📋</span> Logs
+        <span class="nav-tag hidden" id="log-badge">●</span>
       </button>
     </div>
 
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-avatar" id="user-avatar">?</div>
+    <div class="sb-footer">
+      <div class="user-chip">
+        <div class="user-av" id="user-avatar">?</div>
         <div>
-          <div class="user-name" id="user-name">Cargando...</div>
-          <div class="user-role" id="user-role">—</div>
+          <div class="user-nm" id="user-name">Cargando...</div>
+          <div class="user-rl" id="user-role">—</div>
         </div>
       </div>
-      <a href="/logout" class="btn-signout">
-        <span>→</span> Cerrar Sesión
-      </a>
+      <a href="/logout" class="btn-logout">→ Cerrar Sesión</a>
     </div>
   </aside>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       MAIN
-       ═══════════════════════════════════════════════════════════ -->
+  <!-- ═══════════════════════ MAIN ═══════════════════════ -->
   <div class="main">
-
-    <!-- TOPBAR -->
     <header class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-breadcrumb">
-          HyperStock <span>›</span> <span id="page-title">Inicio</span>
-        </div>
+      <div class="breadcrumb">
+        HyperStock <span class="sep">›</span> <span class="cur" id="page-title">Inicio</span>
       </div>
-      <div class="topbar-right">
-        <div class="status-pill">
-          <span class="status-dot"></span> Bot Online
-        </div>
+      <div class="tb-right">
+        <div class="status-pill"><span class="status-dot"></span> Bot Online</div>
       </div>
     </header>
 
     <div class="content">
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: HOME
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ HOME ══════════════════ -->
       <div class="page active" id="page-home">
-
         <div class="server-banner">
-          <div class="banner-pattern"></div>
-          <div class="server-icon">🏪</div>
-          <div class="server-info">
+          <div class="banner-bg-pattern"></div>
+          <div class="server-ico">🏪</div>
+          <div class="server-details">
             <div class="server-name" id="guild-name">HyperStock</div>
-            <div class="server-meta">
-              <span id="meta-members">— miembros</span>
-              <span id="meta-channels">— canales</span>
-              <span id="meta-created">—</span>
+            <div class="server-meta-row">
+              <span>👥 <span id="meta-members">—</span></span>
+              <span>📢 <span id="meta-channels">—</span></span>
+              <span>🎭 <span id="meta-roles">—</span></span>
+              <span>📅 <span id="meta-created">—</span></span>
             </div>
           </div>
-          <div class="server-banner-badges">
-            <div class="server-tier-badge" id="boost-badge">🚀 Cargando...</div>
+          <div class="server-right">
+            <div class="tier-badge" id="boost-badge">🚀 Cargando...</div>
           </div>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#6366f1,#8b5cf6);--stat-bg:rgba(99,102,241,0.1);--stat-border:rgba(99,102,241,0.2);--stat-orb:rgba(99,102,241,0.1)">
-            <div class="stat-icon-wrap">👥</div>
-            <div class="stat-value" id="stat-members">—</div>
-            <div class="stat-label">Total Miembros</div>
+        <div class="g-auto-sm mb-24">
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#6366f1,#8b5cf6);--sc-bg:rgba(99,102,241,.1);--sc-border:rgba(99,102,241,.2);--sc-orb:rgba(99,102,241,.1)">
+            <div class="sc-icon">👥</div><div class="sc-value" id="stat-members">—</div><div class="sc-label">Miembros</div>
           </div>
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#8b5cf6,#ec4899);--stat-bg:rgba(139,92,246,0.1);--stat-border:rgba(139,92,246,0.2);--stat-orb:rgba(139,92,246,0.1)">
-            <div class="stat-icon-wrap">📢</div>
-            <div class="stat-value" id="stat-channels">—</div>
-            <div class="stat-label">Canales</div>
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#7c3aed,#ec4899);--sc-bg:rgba(124,58,237,.1);--sc-border:rgba(124,58,237,.2);--sc-orb:rgba(124,58,237,.1)">
+            <div class="sc-icon">📢</div><div class="sc-value" id="stat-channels">—</div><div class="sc-label">Canales</div>
           </div>
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#10b981,#06b6d4);--stat-bg:rgba(16,185,129,0.1);--stat-border:rgba(16,185,129,0.2);--stat-orb:rgba(16,185,129,0.1)">
-            <div class="stat-icon-wrap">🎭</div>
-            <div class="stat-value" id="stat-roles">—</div>
-            <div class="stat-label">Roles</div>
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#22c55e,#14b8a6);--sc-bg:rgba(34,197,94,.1);--sc-border:rgba(34,197,94,.2);--sc-orb:rgba(34,197,94,.1)">
+            <div class="sc-icon">🎭</div><div class="sc-value" id="stat-roles">—</div><div class="sc-label">Roles</div>
           </div>
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#f59e0b,#f97316);--stat-bg:rgba(245,158,11,0.1);--stat-border:rgba(245,158,11,0.2);--stat-orb:rgba(245,158,11,0.1)">
-            <div class="stat-icon-wrap">⏱️</div>
-            <div class="stat-value" id="stat-uptime">—</div>
-            <div class="stat-label">Uptime Bot</div>
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#f59e0b,#f97316);--sc-bg:rgba(245,158,11,.1);--sc-border:rgba(245,158,11,.2);--sc-orb:rgba(245,158,11,.1)">
+            <div class="sc-icon">⏱️</div><div class="sc-value" id="stat-uptime">—</div><div class="sc-label">Uptime</div>
           </div>
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#06b6d4,#6366f1);--stat-bg:rgba(6,182,212,0.1);--stat-border:rgba(6,182,212,0.2);--stat-orb:rgba(6,182,212,0.1)">
-            <div class="stat-icon-wrap">🚀</div>
-            <div class="stat-value" id="stat-boosts">—</div>
-            <div class="stat-label">Boosts</div>
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#06b6d4,#6366f1);--sc-bg:rgba(6,182,212,.1);--sc-border:rgba(6,182,212,.2);--sc-orb:rgba(6,182,212,.1)">
+            <div class="sc-icon">🚀</div><div class="sc-value" id="stat-boosts">—</div><div class="sc-label">Boosts</div>
           </div>
-          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#ec4899,#f97316);--stat-bg:rgba(236,72,153,0.1);--stat-border:rgba(236,72,153,0.2);--stat-orb:rgba(236,72,153,0.1)">
-            <div class="stat-icon-wrap">🤖</div>
-            <div class="stat-value" id="stat-ping">—</div>
-            <div class="stat-label">Ping API</div>
+          <div class="stat-card" style="--sc-grad:linear-gradient(90deg,#ec4899,#f97316);--sc-bg:rgba(236,72,153,.1);--sc-border:rgba(236,72,153,.2);--sc-orb:rgba(236,72,153,.1)">
+            <div class="sc-icon">🤖</div><div class="sc-value" id="stat-ping">—</div><div class="sc-label">Ping API</div>
           </div>
         </div>
 
-        <div class="grid-2">
+        <div class="g2">
           <div class="card">
-            <div class="card-title">
-              <div class="card-title-icon">📊</div>
-              Actividad Reciente
+            <div class="card-hdr">
+              <div class="card-title"><div class="card-icon">📊</div> Actividad Reciente</div>
+              <button class="btn btn-ghost btn-xs" onclick="loadHome()">↻ Actualizar</button>
             </div>
             <div id="home-logs" class="log-feed">
-              <div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad aún</p></div>
+              <div class="empty-state"><div class="empty-ico">📋</div><p>Sin actividad reciente</p></div>
             </div>
           </div>
           <div class="card">
-            <div class="card-title">
-              <div class="card-title-icon">ℹ️</div>
-              Información del Servidor
+            <div class="card-hdr">
+              <div class="card-title"><div class="card-icon">ℹ️</div> Servidor</div>
             </div>
             <div class="info-list" id="guild-info">
-              <div class="empty-state"><div class="empty-icon">⏳</div><p>Cargando...</p></div>
+              <div class="skeleton" style="height:36px;margin-bottom:6px"></div>
+              <div class="skeleton" style="height:36px;margin-bottom:6px"></div>
+              <div class="skeleton" style="height:36px"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: EMBEDS
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ EMBEDS ══════════════════ -->
       <div class="page" id="page-embeds">
-        <div class="section-header">
-          <h2>📨 Enviar Embeds</h2>
-          <p>Selecciona un canal y envía los embeds de HyperStock al servidor</p>
+        <div class="section-hdr">
+          <div class="page-title-h">📨 Enviar Embeds</div>
+          <div class="page-sub">Selecciona canal y envía los embeds predefinidos de HyperStock</div>
         </div>
 
         <div class="channel-bar">
-          <span class="channel-bar-label">📡 Canal destino:</span>
-          <select class="select" id="channelSelect" style="max-width:300px; margin:0">
+          <span class="channel-bar-lbl">📡 Canal destino:</span>
+          <select class="select" id="channelSelect" style="max-width:280px;margin:0">
             <option value="">Cargando canales...</option>
           </select>
+          <span class="t-sm t-muted" id="channel-bar-hint" style="margin-left:auto">Selecciona un canal para habilitar el envío</span>
         </div>
 
-        <div class="grid-auto" id="embeds-grid">
-          <!-- JS renders here -->
+        <div class="g-auto" id="embeds-grid">
+          <!-- renderizado por JS -->
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: EDITOR
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ EDITOR ══════════════════ -->
       <div class="page" id="page-editor">
-        <div class="section-header">
-          <h2>✏️ Editor de Embeds</h2>
-          <p>Personaliza cada detalle del embed con preview en tiempo real</p>
+        <div class="section-hdr row">
+          <div>
+            <div class="page-title-h">✏️ Editor de Embeds</div>
+            <div class="page-sub">Construye embeds personalizados con preview en tiempo real</div>
+          </div>
+          <div class="row-gap">
+            <button class="btn btn-ghost btn-sm" onclick="saveDraft()" id="btn-save-draft">💾 Guardar Borrador</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearEditor()">🗑️ Limpiar</button>
+          </div>
         </div>
 
-        <div class="editor-grid">
-          <!-- Controles -->
-          <div class="card">
-            <div class="field">
-              <label class="label">📋 Plantilla base</label>
-              <select class="select" id="editor-template" onchange="loadTemplate()">
-                <option value="">— Embed en blanco —</option>
-                <option value="tickets">🎫 Sistema de Tickets</option>
-                <option value="metodos">💳 Métodos de Pago</option>
-                <option value="diamantes">💎 Venta de Diamantes</option>
-                <option value="decoraciones">🎨 Decoraciones Discord</option>
-                <option value="boosts">⚡ Discord Boosts</option>
-              </select>
-            </div>
+        <!-- Drafts bar -->
+        <div id="drafts-bar" class="drafts-bar hidden">
+          <span class="draft-status" id="draft-status">💾 Borradores guardados:</span>
+          <div class="draft-list" id="draft-list"></div>
+        </div>
 
-            <div class="field-row-2">
-              <div>
-                <label class="label">Emoji del autor</label>
-                <input class="input" id="editor-author-emoji" placeholder="🏪" oninput="updatePreview()"/>
+        <div class="editor-layout">
+          <!-- PANEL IZQUIERDO -->
+          <div>
+            <!-- Plantilla y canal -->
+            <div class="card mb-16">
+              <div class="field-2">
+                <div>
+                  <label class="label">📋 Plantilla base</label>
+                  <select class="select" id="editor-template" onchange="loadTemplate()">
+                    <option value="">— Embed en blanco —</option>
+                    <option value="tickets">🎫 Sistema de Tickets</option>
+                    <option value="metodos">💳 Métodos de Pago</option>
+                    <option value="diamantes">💎 Venta de Diamantes</option>
+                    <option value="decoraciones">🎨 Decoraciones Discord</option>
+                    <option value="boosts">⚡ Discord Boosts</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">📡 Canal destino</label>
+                  <select class="select" id="editor-channel">
+                    <option value="">Selecciona canal...</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label class="label">Nombre del autor</label>
-                <input class="input" id="editor-author-name" placeholder="Hyper Stock" oninput="updatePreview()"/>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label">Título</label>
-              <input class="input" id="editor-title" placeholder="Título del embed..." oninput="updatePreview()"/>
-            </div>
-
-            <div class="field">
-              <label class="label">Descripción</label>
-              <textarea class="textarea" id="editor-desc" placeholder="Contenido del embed..." oninput="updatePreview()"></textarea>
-            </div>
-
-            <div class="field-row-2">
-              <div>
-                <label class="label">URL de Imagen</label>
-                <input class="input" id="editor-image" placeholder="https://i.imgur.com/..." oninput="updatePreview()"/>
-              </div>
-              <div>
-                <label class="label">URL Thumbnail</label>
-                <input class="input" id="editor-thumb" placeholder="https://..." oninput="updatePreview()"/>
+              <div class="between">
+                <span class="t-sm t-muted" id="embed-char-total">Caracteres totales: 0 / 6000</span>
+                <button class="btn btn-primary" onclick="sendCustomEmbed()" id="btn-send-custom">
+                  📨 Enviar Embed
+                </button>
               </div>
             </div>
 
-            <div class="field-row-2">
-              <div>
-                <label class="label">Texto Footer</label>
-                <input class="input" id="editor-footer" placeholder="» HyperStock" oninput="updatePreview()"/>
-              </div>
-              <div>
-                <label class="label">Ícono Footer (URL)</label>
-                <input class="input" id="editor-footer-icon" placeholder="https://..." oninput="updatePreview()"/>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label">Color del embed</label>
-              <div class="color-palette">
-                <div class="color-swatch active" style="background:#6366f1" data-color="#6366f1" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#8b5cf6" data-color="#8b5cf6" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#ec4899" data-color="#ec4899" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#10b981" data-color="#10b981" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#06b6d4" data-color="#06b6d4" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#f97316" data-color="#f97316" onclick="pickColor(this)"></div>
-                <div class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="pickColor(this)"></div>
-                <input type="color" id="editor-color-picker" value="#6366f1"
-                  title="Color personalizado"
-                  style="width:30px;height:30px;border:none;background:none;cursor:pointer;padding:0;border-radius:8px;"
-                  oninput="pickColorRaw(this.value)"/>
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label">Emoji del botón / tag</label>
-              <div class="emoji-row">
-                <button class="e-btn selected" data-emoji="none" onclick="pickEmoji(this)" title="Sin emoji">—</button>
-                <button class="e-btn" data-emoji="💎" onclick="pickEmoji(this)">💎</button>
-                <button class="e-btn" data-emoji="⚡" onclick="pickEmoji(this)">⚡</button>
-                <button class="e-btn" data-emoji="🎨" onclick="pickEmoji(this)">🎨</button>
-                <button class="e-btn" data-emoji="💳" onclick="pickEmoji(this)">💳</button>
-                <button class="e-btn" data-emoji="🎫" onclick="pickEmoji(this)">🎫</button>
-                <button class="e-btn" data-emoji="🛠️" onclick="pickEmoji(this)">🛠️</button>
-                <button class="e-btn" data-emoji="🎁" onclick="pickEmoji(this)">🎁</button>
-                <button class="e-btn" data-emoji="🔥" onclick="pickEmoji(this)">🔥</button>
-                <button class="e-btn" data-emoji="✅" onclick="pickEmoji(this)">✅</button>
-              </div>
-              <input class="input mt-8" id="editor-tag" placeholder="Texto del botón / tag (ej: » Adquirir)" oninput="updatePreview()"/>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="flex-between flex-gap">
-              <select class="select flex-1" id="editor-channel">
-                <option value="">Selecciona canal de destino...</option>
-              </select>
-              <button class="btn btn-primary" onclick="sendCustomEmbed()">
-                📨 Enviar Embed
-              </button>
-            </div>
-          </div>
-
-          <!-- Preview -->
-          <div class="editor-preview-card">
+            <!-- Tabs de secciones -->
             <div class="card">
-              <div class="flex-between mb-16">
-                <span class="card-title" style="margin:0">👁️ Preview</span>
-                <span class="badge badge-staff">Discord</span>
+              <div class="editor-tabs">
+                <button class="editor-tab active" onclick="switchEditorTab('author', this)">👤 Autor</button>
+                <button class="editor-tab" onclick="switchEditorTab('content', this)">📝 Contenido</button>
+                <button class="editor-tab" onclick="switchEditorTab('fields', this)">📊 Campos</button>
+                <button class="editor-tab" onclick="switchEditorTab('media', this)">🖼️ Media</button>
+                <button class="editor-tab" onclick="switchEditorTab('footer', this)">📎 Footer</button>
+                <button class="editor-tab" onclick="switchEditorTab('style', this)">🎨 Estilo</button>
+                <button class="editor-tab" onclick="switchEditorTab('button', this)">🔘 Botón</button>
               </div>
 
-              <div style="background:#313338; border-radius:8px; padding:12px; min-height:160px;">
-                <div style="display:flex; gap:12px; align-items:flex-start;">
-                  <!-- Avatar placeholder -->
-                  <div style="width:40px;height:40px;background:var(--grad-primary);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">⚡</div>
-                  <div style="flex:1">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                      <span style="font-size:14px;font-weight:700;color:#fff;">HyperStock</span>
-                      <span style="background:#5865f2;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;">APP</span>
-                      <span style="font-size:12px;color:#949ba4;">Hoy a las 00:00</span>
-                    </div>
-
-                    <!-- Embed preview -->
-                    <div style="display:flex;background:#2b2d31;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);">
-                      <div id="prev-bar" style="width:4px;background:#6366f1;flex-shrink:0;"></div>
-                      <div style="padding:10px 14px 12px;flex:1;min-width:0;">
-                        <div id="prev-author" style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
-                          <span id="prev-author-icon" style="font-size:13px;">🏪</span>
-                          <span id="prev-author-name" style="font-size:12.5px;font-weight:700;color:#fff;">Hyper Stock</span>
+              <!-- TAB: AUTOR -->
+              <div class="editor-panel active" id="epanel-author">
+                <div class="field-2">
+                  <div>
+                    <label class="label">Emoji del autor</label>
+                    <div class="emoji-picker-wrap">
+                      <div class="emoji-input-row">
+                        <button class="emoji-trigger" onclick="toggleEmojiPanel('author-emoji-panel')" title="Seleccionar emoji">
+                          <span id="author-emoji-display">🏪</span>
+                        </button>
+                        <input class="input" id="editor-author-emoji" placeholder="🏪 o código Discord" oninput="onAuthorEmojiInput()" value="🏪"/>
+                      </div>
+                      <div class="emoji-panel" id="author-emoji-panel">
+                        <div class="emoji-search-row">
+                          <input class="emoji-search" placeholder="Buscar emoji..." oninput="filterEmojis('author', this.value)"/>
                         </div>
-                        <div id="prev-title" style="font-size:14px;font-weight:700;color:#fff;margin-bottom:7px;display:none;"></div>
-                        <div id="prev-desc" style="font-size:12px;color:#dbdee1;line-height:1.65;white-space:pre-line;">El contenido del embed aparecerá aquí en tiempo real...</div>
-                        <div id="prev-img-wrap" style="display:none;margin-top:10px;">
-                          <img id="prev-img" src="" alt="" style="max-width:100%;max-height:120px;border-radius:4px;display:block;"/>
+                        <div class="emoji-tabs">
+                          <span class="emoji-tab active" onclick="setEmojiTabAu('unicode', this)">Unicode</span>
+                          <span class="emoji-tab" onclick="setEmojiTabAu('server', this)">Servidor</span>
                         </div>
-                        <div id="prev-footer" style="display:none;margin-top:9px;font-size:11px;color:#949ba4;display:flex;align-items:center;gap:6px;">
-                          <span id="prev-footer-icon"></span><span id="prev-footer-text"></span>
-                        </div>
-                        <div id="prev-tag" style="display:none;margin-top:10px;background:rgba(99,102,241,0.2);color:#818cf8;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:4px;display:inline-block;border:1px solid rgba(99,102,241,0.3);">
+                        <div class="emoji-grid" id="author-emoji-grid"></div>
+                        <div class="emoji-footer">
+                          <span class="emoji-preview" id="author-emoji-prev">🏪</span>
+                          <div class="emoji-info">
+                            <div class="emoji-name" id="author-emoji-name">store</div>
+                            <div class="emoji-code" id="author-emoji-code">U+1F3EA</div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <div>
+                    <label class="label">Nombre del autor</label>
+                    <input class="input" id="editor-author-name" placeholder="Hyper Stock" oninput="updatePreview()" maxlength="256"/>
+                    <div class="input-count" id="count-author">0/256</div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">URL del autor (opcional)</label>
+                  <input class="input" id="editor-author-url" placeholder="https://..." oninput="updatePreview()"/>
+                  <div class="input-hint">Si se establece, el nombre del autor será un enlace</div>
+                </div>
+                <div class="field">
+                  <label class="label">URL del ícono del autor</label>
+                  <input class="input" id="editor-author-icon" placeholder="https://i.imgur.com/..." oninput="updatePreview()"/>
+                  <div class="input-hint">Imagen pequeña a la izquierda del nombre del autor</div>
+                </div>
+              </div>
 
+              <!-- TAB: CONTENIDO -->
+              <div class="editor-panel" id="epanel-content">
+                <div class="field">
+                  <label class="label">Título</label>
+                  <input class="input" id="editor-title" placeholder="Título del embed..." oninput="updatePreview(); countChars('editor-title','count-title',256)" maxlength="256"/>
+                  <div class="input-count" id="count-title">0/256</div>
+                </div>
+                <div class="field">
+                  <label class="label">URL del título</label>
+                  <input class="input" id="editor-title-url" placeholder="https://... (hace el título clickeable)" oninput="updatePreview()"/>
+                </div>
+                <div class="field">
+                  <label class="label">Descripción</label>
+                  <div class="emoji-picker-wrap">
+                    <textarea class="textarea" id="editor-desc" placeholder="Contenido del embed...&#10;&#10;Soporta **negrita**, *cursiva*, __subrayado__, ~~tachado~~&#10;y saltos de línea" oninput="updatePreview(); countChars('editor-desc','count-desc',4096)" style="min-height:130px"></textarea>
+                    <button class="emoji-trigger" style="position:absolute;bottom:10px;right:10px;width:28px;height:28px;" onclick="toggleEmojiPanel('desc-emoji-panel')" title="Insertar emoji">😀</button>
+                    <div class="emoji-panel" id="desc-emoji-panel" style="bottom:calc(100% + 8px);top:auto;left:auto;right:0">
+                      <div class="emoji-search-row">
+                        <input class="emoji-search" placeholder="Buscar emoji..." oninput="filterEmojis('desc', this.value)"/>
+                      </div>
+                      <div class="emoji-tabs">
+                        <span class="emoji-tab active" onclick="setEmojiTabDesc('unicode', this)">Unicode</span>
+                        <span class="emoji-tab" onclick="setEmojiTabDesc('server', this)">Servidor</span>
+                      </div>
+                      <div class="emoji-grid" id="desc-emoji-grid"></div>
+                      <div class="emoji-footer">
+                        <span class="emoji-preview" id="desc-emoji-prev">—</span>
+                        <div class="emoji-info">
+                          <div class="emoji-name" id="desc-emoji-name">Selecciona un emoji</div>
+                          <div class="emoji-code" id="desc-emoji-code"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-count" id="count-desc">0/4096</div>
+                </div>
+              </div>
+
+              <!-- TAB: CAMPOS -->
+              <div class="editor-panel" id="epanel-fields">
+                <div class="fields-list" id="fields-list"></div>
+                <button class="add-field-btn" onclick="addField()">
+                  + Agregar Campo <span class="t-dim" id="fields-counter">(0/25)</span>
+                </button>
+                <div class="input-hint mt-8">Los campos pueden ser inline (3 por fila) o de bloque completo. Máx. 25 campos por embed.</div>
+              </div>
+
+              <!-- TAB: MEDIA -->
+              <div class="editor-panel" id="epanel-media">
+                <div class="field">
+                  <label class="label">🖼️ Imagen principal</label>
+                  <input class="input" id="editor-image" placeholder="https://i.imgur.com/..." oninput="updatePreview()"/>
+                  <div class="input-hint">Imagen grande que aparece debajo de la descripción (PNG, JPG, GIF, WEBP)</div>
+                </div>
+                <div id="image-preview-wrap" style="display:none;margin-top:10px;margin-bottom:16px">
+                  <img id="image-preview-img" src="" alt="" style="max-width:100%;max-height:140px;border-radius:8px;border:1px solid var(--b1);object-fit:cover"/>
+                </div>
+                <div class="field">
+                  <label class="label">🔲 Thumbnail (miniatura)</label>
+                  <input class="input" id="editor-thumb" placeholder="https://..." oninput="updatePreview()"/>
+                  <div class="input-hint">Imagen pequeña en la esquina superior derecha del embed</div>
+                </div>
+                <div id="thumb-preview-wrap" style="display:none;margin-top:10px">
+                  <img id="thumb-preview-img" src="" alt="" style="width:80px;height:80px;border-radius:8px;border:1px solid var(--b1);object-fit:cover"/>
+                </div>
+              </div>
+
+              <!-- TAB: FOOTER -->
+              <div class="editor-panel" id="epanel-footer">
+                <div class="field">
+                  <label class="label">Texto del footer</label>
+                  <input class="input" id="editor-footer" placeholder="» HyperStock" oninput="updatePreview(); countChars('editor-footer','count-footer',2048)" maxlength="2048"/>
+                  <div class="input-count" id="count-footer">0/2048</div>
+                </div>
+                <div class="field">
+                  <label class="label">URL del ícono del footer</label>
+                  <input class="input" id="editor-footer-icon" placeholder="https://..." oninput="updatePreview()"/>
+                  <div class="input-hint">Imagen circular pequeña a la izquierda del texto del footer</div>
+                </div>
+              </div>
+
+              <!-- TAB: ESTILO -->
+              <div class="editor-panel" id="epanel-style">
+                <div class="field">
+                  <label class="label">Color de la barra lateral</label>
+                  <div class="color-grid">
+                    <div class="c-swatch active" style="background:#6366f1" data-col="#6366f1" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#7c3aed" data-col="#7c3aed" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#ec4899" data-col="#ec4899" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#22c55e" data-col="#22c55e" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#f59e0b" data-col="#f59e0b" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#ef4444" data-col="#ef4444" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#06b6d4" data-col="#06b6d4" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#f97316" data-col="#f97316" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#ffffff" data-col="#ffffff" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#ff0000" data-col="#ff0000" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#ffd700" data-col="#ffd700" onclick="pickColor(this)"></div>
+                    <div class="c-swatch" style="background:#00ff7f" data-col="#00ff7f" onclick="pickColor(this)"></div>
+                  </div>
+                  <div class="c-hex mt-12">
+                    <label class="label" style="margin-bottom:0;white-space:nowrap">HEX:</label>
+                    <input class="input" id="editor-color-hex" placeholder="#6366f1" value="#6366f1" oninput="pickColorFromHex(this.value)" maxlength="7" style="font-family:'JetBrains Mono',monospace"/>
+                    <input type="color" id="editor-color-picker" value="#6366f1" oninput="pickColorRaw(this.value)" style="width:38px;height:38px;border:none;background:none;cursor:pointer;padding:0;flex-shrink:0;border-radius:8px"/>
+                    <div class="c-preview" id="color-preview" style="background:#6366f1"></div>
                   </div>
                 </div>
               </div>
+
+              <!-- TAB: BOTÓN -->
+              <div class="editor-panel" id="epanel-button">
+                <div class="field">
+                  <label class="label">Tipo de componente</label>
+                  <select class="select" id="editor-btn-type" onchange="updatePreview()">
+                    <option value="none">Sin componente</option>
+                    <option value="button">Botón</option>
+                  </select>
+                </div>
+                <div id="btn-options" style="display:none">
+                  <div class="field-2">
+                    <div>
+                      <label class="label">Emoji del botón</label>
+                      <div class="emoji-picker-wrap">
+                        <div class="emoji-input-row">
+                          <button class="emoji-trigger" onclick="toggleEmojiPanel('btn-emoji-panel')">
+                            <span id="btn-emoji-display">💎</span>
+                          </button>
+                          <input class="input" id="editor-btn-emoji" placeholder="💎" oninput="updatePreview()" value="💎"/>
+                        </div>
+                        <div class="emoji-panel" id="btn-emoji-panel">
+                          <div class="emoji-search-row"><input class="emoji-search" placeholder="Buscar..." oninput="filterEmojis('btn', this.value)"/></div>
+                          <div class="emoji-tabs">
+                            <span class="emoji-tab active" onclick="setEmojiTabBtn('unicode',this)">Unicode</span>
+                            <span class="emoji-tab" onclick="setEmojiTabBtn('server',this)">Servidor</span>
+                          </div>
+                          <div class="emoji-grid" id="btn-emoji-grid"></div>
+                          <div class="emoji-footer">
+                            <span class="emoji-preview" id="btn-emoji-prev">💎</span>
+                            <div class="emoji-info"><div class="emoji-name" id="btn-emoji-name">gem</div></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="label">Texto del botón</label>
+                      <input class="input" id="editor-tag" placeholder="» Adquirir" oninput="updatePreview()" maxlength="80"/>
+                      <div class="input-count" id="count-btn">0/80</div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Estilo del botón</label>
+                    <select class="select" id="editor-btn-style" onchange="updatePreview()">
+                      <option value="Primary">Primary (Azul)</option>
+                      <option value="Secondary">Secondary (Gris)</option>
+                      <option value="Success">Success (Verde)</option>
+                      <option value="Danger">Danger (Rojo)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- end .card tabs -->
+          </div><!-- end left panel -->
+
+          <!-- PANEL DERECHO — PREVIEW -->
+          <div class="editor-sticky">
+            <div class="card">
+              <div class="card-hdr">
+                <div class="card-title"><div class="card-icon">👁️</div> Preview en tiempo real</div>
+                <span class="badge b-staff">Simulado</span>
+              </div>
+
+              <div class="discord-mock">
+                <div class="mock-msg-row">
+                  <div class="mock-bot-av">⚡</div>
+                  <div class="mock-msg-body">
+                    <div class="mock-msg-hdr">
+                      <span class="mock-bot-name">HyperStock</span>
+                      <span class="mock-app-tag">APP</span>
+                      <span class="mock-time">Hoy 00:00</span>
+                    </div>
+
+                    <div class="embed-box" id="embed-preview-box">
+                      <div class="embed-color-stripe" id="prev-bar" style="background:#6366f1"></div>
+                      <div class="embed-content-area">
+                        <!-- Thumbnail flotante -->
+                        <img id="prev-thumb" src="" alt="" class="embed-thumb" style="display:none"/>
+
+                        <!-- Autor -->
+                        <div class="embed-a-row" id="prev-author-row" style="display:none">
+                          <span class="embed-a-ico" id="prev-author-icon">🏪</span>
+                          <span class="embed-a-name" id="prev-author-name">Hyper Stock</span>
+                        </div>
+
+                        <!-- Título -->
+                        <div class="embed-t-text" id="prev-title" style="display:none"></div>
+
+                        <!-- Descripción -->
+                        <div class="embed-d-text" id="prev-desc" style="color:#949ba4;font-style:italic">El contenido aparecerá aquí...</div>
+
+                        <!-- Campos -->
+                        <div class="embed-fields-grid" id="prev-fields" style="display:none"></div>
+
+                        <!-- Imagen -->
+                        <img id="prev-img" src="" alt="" class="embed-img-main" style="display:none"/>
+
+                        <!-- Footer -->
+                        <div class="embed-ft-row" id="prev-footer" style="display:none">
+                          <img id="prev-footer-ico" src="" class="embed-ft-ico" style="display:none"/>
+                          <span class="embed-ft-text" id="prev-footer-text"></span>
+                        </div>
+
+                        <!-- Botón/Tag -->
+                        <div id="prev-btn" style="display:none;margin-top:10px">
+                          <div id="prev-btn-el" style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:4px;font-size:13px;font-weight:600;cursor:default"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="t-xs t-dim mt-8 t-center">⚠️ Vista previa aproximada — el resultado real puede variar</div>
+            </div>
+
+            <!-- Validaciones -->
+            <div class="card mt-16" id="validation-card" style="display:none">
+              <div class="card-title"><div class="card-icon">⚠️</div> Validaciones</div>
+              <div id="validation-list" class="col gap-4"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: TICKETS
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ TICKETS ══════════════════ -->
       <div class="page" id="page-tickets">
-        <div class="section-header">
-          <h2>🎫 Sistema de Tickets</h2>
-          <p>Gestión del sistema de soporte automatizado</p>
+        <div class="section-hdr">
+          <div class="page-title-h">🎫 Sistema de Tickets</div>
+          <div class="page-sub">Despliegue y gestión del sistema de soporte por tickets</div>
         </div>
-        <div class="grid-2">
+        <div class="g2">
           <div class="card">
-            <div class="card-title"><div class="card-title-icon">⚙️</div> Despliegue Rápido</div>
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">🚀</div> Despliegue Rápido</div></div>
             <div class="field">
               <label class="label">Canal donde desplegar los tickets</label>
-              <select class="select" id="ticket-channel">
-                <option value="">Selecciona un canal...</option>
-              </select>
+              <select class="select" id="ticket-channel"><option value="">Selecciona canal...</option></select>
             </div>
-            <button class="btn btn-primary btn-full mt-12" onclick="deployTicketEmbed()">
-              🚀 Desplegar Sistema de Tickets
-            </button>
+            <button class="btn btn-primary btn-full mt-12" onclick="deployTicketEmbed()">🚀 Desplegar Sistema de Tickets</button>
           </div>
           <div class="card">
-            <div class="card-title"><div class="card-title-icon">📋</div> Categorías Activas</div>
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">📋</div> Categorías Activas</div></div>
             <div class="info-list">
-              <div class="info-row"><span class="info-row-key">💎 Comprar Diamantes</span><span class="badge badge-staff">Activo</span></div>
-              <div class="info-row"><span class="info-row-key">⚡ Discord Boosts</span><span class="badge badge-staff">Activo</span></div>
-              <div class="info-row"><span class="info-row-key">🎨 Decoraciones Discord</span><span class="badge badge-staff">Activo</span></div>
-              <div class="info-row"><span class="info-row-key">💳 Métodos de Pago</span><span class="badge badge-staff">Activo</span></div>
-              <div class="info-row"><span class="info-row-key">🛠️ Soporte General</span><span class="badge badge-staff">Activo</span></div>
+              <div class="info-row"><span class="info-key">💎 Comprar Diamantes</span><span class="badge b-active">Activo</span></div>
+              <div class="info-row"><span class="info-key">⚡ Discord Boosts</span><span class="badge b-active">Activo</span></div>
+              <div class="info-row"><span class="info-key">🎨 Decoraciones</span><span class="badge b-active">Activo</span></div>
+              <div class="info-row"><span class="info-key">💳 Métodos de Pago</span><span class="badge b-active">Activo</span></div>
+              <div class="info-row"><span class="info-key">🛠️ Soporte General</span><span class="badge b-active">Activo</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: USERS
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ USUARIOS ══════════════════ -->
       <div class="page" id="page-users">
-        <div class="section-header flex-between">
-          <div>
-            <h2>👥 Usuarios del Panel</h2>
-            <p>Gestiona el acceso y los permisos de cada usuario</p>
-          </div>
+        <div class="section-hdr row">
+          <div><div class="page-title-h">👥 Usuarios del Panel</div><div class="page-sub">Gestiona el acceso y los permisos de cada cuenta</div></div>
           <button class="btn btn-primary" onclick="openModal('modal-user')">+ Nuevo Usuario</button>
         </div>
         <div class="card">
           <div class="table-wrap">
             <table>
-              <thead>
-                <tr>
-                  <th>Usuario</th><th>Rol</th><th>Acceso</th><th>Creado</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="users-tbody">
-                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-3)">Cargando...</td></tr>
-              </tbody>
+              <thead><tr><th>Usuario</th><th>Rol</th><th>Permisos</th><th>Creado</th><th>Acciones</th></tr></thead>
+              <tbody id="users-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--t3)">Cargando...</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: SECURITY
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ SEGURIDAD ══════════════════ -->
       <div class="page" id="page-security">
-        <div class="section-header">
-          <h2>🛡️ Seguridad del Servidor</h2>
-          <p>Protege tu servidor automáticamente de spam, raids y contenido tóxico</p>
+        <div class="section-hdr">
+          <div class="page-title-h">🛡️ Seguridad del Servidor</div>
+          <div class="page-sub">Protección automática contra spam, raids y contenido no deseado</div>
         </div>
-
-        <div class="grid-2">
-          <!-- Anti-Spam -->
-          <div class="card security-section">
-            <div class="card-title"><div class="card-title-icon">🚫</div> Anti-Spam</div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">🚫</div> Anti-Spam</div></div>
             <div class="toggle-row">
-              <div class="toggle-info">
-                <h4>Activar Anti-Spam</h4>
-                <p>Silencia, expulsa o banea a usuarios que envían mensajes masivos</p>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="spam-enabled" onchange="saveSecurityConfig()"/>
-                <span class="toggle-track"></span>
-              </label>
+              <div class="toggle-info"><h4>Activar Anti-Spam</h4><p>Detecta y actúa contra mensajes masivos</p></div>
+              <label class="toggle"><input type="checkbox" id="spam-enabled" onchange="saveSecurityConfig()"/><span class="toggle-track"></span></label>
             </div>
-            <div class="field-row-2 mt-16">
-              <div>
-                <label class="label">Máx. mensajes</label>
-                <input class="input" type="number" id="spam-max" value="5" min="2" max="20" oninput="saveSecurityConfig()"/>
-              </div>
-              <div>
-                <label class="label">Ventana (ms)</label>
-                <input class="input" type="number" id="spam-window" value="5000" min="1000" oninput="saveSecurityConfig()"/>
-              </div>
+            <div class="field-2 mt-16">
+              <div><label class="label">Máx. mensajes</label><input class="input" type="number" id="spam-max" value="5" min="2" max="20" oninput="saveSecurityConfig()"/></div>
+              <div><label class="label">Ventana (ms)</label><input class="input" type="number" id="spam-window" value="5000" min="1000" oninput="saveSecurityConfig()"/></div>
             </div>
-            <div class="field">
-              <label class="label">Acción</label>
+            <div class="field"><label class="label">Acción</label>
               <select class="select" id="spam-action" onchange="saveSecurityConfig()">
-                <option value="mute">⏸️ Silenciar (5 min)</option>
+                <option value="mute">⏸️ Silenciar 5 min</option>
                 <option value="kick">👢 Expulsar</option>
                 <option value="ban">🔨 Banear</option>
               </select>
             </div>
           </div>
-
-          <!-- Anti-Raid -->
-          <div class="card security-section">
-            <div class="card-title"><div class="card-title-icon">⚠️</div> Anti-Raid</div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">⚠️</div> Anti-Raid</div></div>
             <div class="toggle-row">
-              <div class="toggle-info">
-                <h4>Activar Anti-Raid</h4>
-                <p>Detecta entradas masivas y actúa automáticamente</p>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" id="raid-enabled" onchange="saveSecurityConfig()"/>
-                <span class="toggle-track"></span>
-              </label>
+              <div class="toggle-info"><h4>Activar Anti-Raid</h4><p>Bloquea entradas masivas al servidor</p></div>
+              <label class="toggle"><input type="checkbox" id="raid-enabled" onchange="saveSecurityConfig()"/><span class="toggle-track"></span></label>
             </div>
-            <div class="field-row-2 mt-16">
-              <div>
-                <label class="label">Máx. joins</label>
-                <input class="input" type="number" id="raid-max" value="10" min="3" max="50" oninput="saveSecurityConfig()"/>
-              </div>
-              <div>
-                <label class="label">Ventana (ms)</label>
-                <input class="input" type="number" id="raid-window" value="10000" min="1000" oninput="saveSecurityConfig()"/>
-              </div>
+            <div class="field-2 mt-16">
+              <div><label class="label">Máx. joins</label><input class="input" type="number" id="raid-max" value="10" min="3" max="50" oninput="saveSecurityConfig()"/></div>
+              <div><label class="label">Ventana (ms)</label><input class="input" type="number" id="raid-window" value="10000" min="1000" oninput="saveSecurityConfig()"/></div>
             </div>
-            <div class="field">
-              <label class="label">Acción</label>
+            <div class="field"><label class="label">Acción</label>
               <select class="select" id="raid-action" onchange="saveSecurityConfig()">
                 <option value="kick">👢 Expulsar</option>
                 <option value="ban">🔨 Banear</option>
               </select>
             </div>
           </div>
-
-          <!-- Word Filter -->
-          <div class="card" style="grid-column: 1 / -1">
-            <div class="card-title"><div class="card-title-icon">🤬</div> Filtro de Palabras</div>
-            <p class="text-muted text-sm mb-16">Los mensajes con estas palabras serán eliminados automáticamente.</p>
-            <div class="tags-wrap" id="word-tags">
-              <span class="text-muted text-sm">Sin palabras configuradas</span>
-            </div>
-            <div class="add-word-row">
-              <input class="input" id="new-word-input" placeholder="Agregar palabra prohibida..."
-                onkeydown="if(event.key==='Enter')addBannedWord()"/>
+          <div class="card" style="grid-column:1/-1">
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">🤬</div> Filtro de Palabras</div></div>
+            <p class="t-muted t-sm mb-12">Mensajes que contengan estas palabras serán eliminados automáticamente.</p>
+            <div class="tags-wrap" id="word-tags"><span class="t-muted t-sm">Sin palabras configuradas</span></div>
+            <div class="add-row">
+              <input class="input" id="new-word-input" placeholder="Agregar palabra prohibida..." onkeydown="if(event.key==='Enter')addBannedWord()"/>
               <button class="btn btn-danger" onclick="addBannedWord()">+ Agregar</button>
             </div>
           </div>
-
-          <!-- Log channel -->
           <div class="card">
-            <div class="card-title"><div class="card-title-icon">📋</div> Canal de Alertas</div>
-            <p class="text-muted text-sm mb-16">El bot enviará alertas de seguridad a este canal.</p>
-            <select class="select" id="log-channel-select" onchange="saveSecurityConfig()">
-              <option value="">Sin canal configurado</option>
-            </select>
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">📋</div> Canal de Alertas</div></div>
+            <p class="t-muted t-sm mb-12">El bot enviará alertas de seguridad aquí.</p>
+            <select class="select" id="log-channel-select" onchange="saveSecurityConfig()"><option value="">Sin canal</option></select>
           </div>
         </div>
       </div>
 
-      <!-- ─────────────────────────────────────────────────────
-           PAGE: LOGS
-           ───────────────────────────────────────────────────── -->
+      <!-- ══════════════════ LOGS ══════════════════ -->
       <div class="page" id="page-logs">
-        <div class="section-header flex-between">
-          <div>
-            <h2>📋 Logs de Auditoría</h2>
-            <p>Historial completo de eventos del servidor y del panel</p>
-          </div>
-          <div class="flex-gap">
-            <select class="select" id="log-filter" onchange="loadLogs()" style="width:180px">
+        <div class="section-hdr row">
+          <div><div class="page-title-h">📋 Logs de Auditoría</div><div class="page-sub">Historial completo de eventos en tiempo real</div></div>
+          <div class="row-gap">
+            <select class="select" id="log-filter" onchange="loadLogs()" style="width:190px">
               <option value="">Todos los eventos</option>
               <option value="member_join">📥 Joins</option>
               <option value="member_leave">📤 Salidas</option>
@@ -534,15 +625,12 @@
               <option value="embed_sent">📨 Embeds</option>
               <option value="web_login">🔐 Logins</option>
             </select>
-            <button class="btn btn-ghost btn-sm" onclick="loadLogs()">🔄 Actualizar</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Actualizar</button>
             <button class="btn btn-danger btn-sm" onclick="clearLogsAction()">🗑️ Limpiar</button>
           </div>
         </div>
-
         <div class="card">
-          <div id="logs-feed" class="log-feed">
-            <div class="empty-state"><div class="empty-icon">📋</div><p>Sin logs registrados</p></div>
-          </div>
+          <div id="logs-feed" class="log-feed"><div class="empty-state"><div class="empty-ico">📋</div><p>Sin logs registrados</p></div></div>
         </div>
       </div>
 
@@ -550,26 +638,16 @@
   </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- ═══ MODAL: NUEVO USUARIO ════════════════════════════════════════ -->
+<!-- MODAL: NUEVO USUARIO -->
 <div class="modal-overlay" id="modal-user">
   <div class="modal">
-    <div class="modal-hdr">
-      <h3>👤 Nuevo Usuario</h3>
-      <button class="modal-close" onclick="closeModal('modal-user')">✕</button>
-    </div>
-    <div class="field">
-      <label class="label">Nombre de usuario</label>
-      <input class="input" id="new-username" placeholder="ej: staff_juan" autocomplete="off"/>
-    </div>
-    <div class="field">
-      <label class="label">Contraseña</label>
-      <input class="input" type="password" id="new-password" placeholder="contraseña segura"/>
-    </div>
-    <div class="field">
-      <label class="label">Rol</label>
+    <div class="modal-hdr"><h3>👤 Nuevo Usuario</h3><button class="modal-close" onclick="closeModal('modal-user')">✕</button></div>
+    <div class="field"><label class="label">Nombre de usuario</label><input class="input" id="new-username" placeholder="ej: staff_juan" autocomplete="off"/></div>
+    <div class="field"><label class="label">Contraseña</label><input class="input" type="password" id="new-password" placeholder="Contraseña segura"/></div>
+    <div class="field"><label class="label">Rol</label>
       <select class="select" id="new-role">
-        <option value="staff">👮 Staff — Puede enviar embeds y ver logs</option>
-        <option value="viewer">👁️ Viewer — Solo lectura del panel</option>
+        <option value="staff">👮 Staff — Embeds, tickets y logs</option>
+        <option value="viewer">👁️ Viewer — Solo lectura</option>
         <option value="admin">⚡ Admin — Acceso total</option>
       </select>
     </div>
@@ -580,9 +658,7 @@
   </div>
 </div>
 
-<!-- Toast container -->
 <div id="toast-container"></div>
-
 <script src="/js/dashboard.js"></script>
 </body>
 </html>

@@ -154,47 +154,75 @@ app.post('/api/send-custom-embed', requireAuth, requirePerm('send_embeds'), asyn
     const channel = await client.channels.fetch(channelId).catch(() => null);
     if (!channel) return res.status(404).json({ error: 'Canal no encontrado' });
 
-    const embed = new EmbedBuilder().setColor(
-      parseInt(embedData.color.replace('#', ''), 16) || 0x5865F2
-    );
+    // Validar longitud total
+    const totalChars = [
+      embedData.title, embedData.authorName, embedData.description, embedData.footer
+    ].join('').length + (embedData.fields||[]).reduce((a,f)=>a+(f.name||'').length+(f.value||'').length,0);
+    if (totalChars > 6000) return res.status(400).json({ error: `El embed supera 6000 caracteres (${totalChars})` });
+
+    const colorHex = (embedData.color||'#5865F2').replace('#','');
+    const colorInt = parseInt(colorHex, 16) || 0x5865F2;
+
+    const embed = new EmbedBuilder().setColor(colorInt);
 
     if (embedData.authorName) {
       embed.setAuthor({
-        name: `${embedData.authorEmoji || ''} ${embedData.authorName}`.trim(),
-        iconURL: embedData.footerIcon || undefined,
+        name:    `${embedData.authorEmoji||''} ${embedData.authorName}`.trim(),
+        iconURL: embedData.authorIcon  || undefined,
+        url:     embedData.authorUrl   || undefined,
       });
     }
-    if (embedData.title)       embed.setTitle(embedData.title);
+    if (embedData.title) embed.setTitle(embedData.title);
+    if (embedData.titleUrl && embedData.title) embed.setURL(embedData.titleUrl);
     if (embedData.description) embed.setDescription(embedData.description);
-    if (embedData.image)       embed.setImage(embedData.image);
-    if (embedData.thumbnail)   embed.setThumbnail(embedData.thumbnail);
+    if (embedData.image)     embed.setImage(embedData.image);
+    if (embedData.thumbnail) embed.setThumbnail(embedData.thumbnail);
     if (embedData.footer) {
       embed.setFooter({
-        text: embedData.footer,
+        text:    embedData.footer,
         iconURL: embedData.footerIcon || undefined,
       });
     }
 
+    // Campos
+    const fields = (embedData.fields || []).filter(f => f.name && f.value).slice(0, 25);
+    if (fields.length) {
+      embed.addFields(fields.map(f => ({
+        name:   f.name.slice(0, 256),
+        value:  f.value.slice(0, 1024),
+        inline: f.inline === true,
+      })));
+    }
+
+    // Componente botón
     const components = [];
-    if (embedData.tag && embedData.tagEmoji && embedData.tagEmoji !== 'none') {
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId('ticket_soporte')
-          .setLabel(embedData.tag)
-          .setStyle(ButtonStyle.Secondary)
-          .setEmoji(embedData.tagEmoji)
-      );
-      components.push(row);
+    if (embedData.btnType === 'button' && embedData.tag) {
+      const STYLES = {
+        Primary: ButtonStyle.Primary, Secondary: ButtonStyle.Secondary,
+        Success: ButtonStyle.Success, Danger: ButtonStyle.Danger,
+      };
+      const btnBuilder = new ButtonBuilder()
+        .setCustomId('ticket_soporte')
+        .setLabel(embedData.tag.slice(0, 80))
+        .setStyle(STYLES[embedData.tagStyle] || ButtonStyle.Secondary);
+      // Solo añadir emoji si es unicode válido (no código custom por seguridad)
+      if (embedData.tagEmoji && !embedData.tagEmoji.includes(':')) {
+        try { btnBuilder.setEmoji(embedData.tagEmoji); } catch(e) {}
+      } else if (embedData.tagEmoji && embedData.tagEmoji.match(/^<a?:\w+:\d+>$/)) {
+        try { btnBuilder.setEmoji(embedData.tagEmoji); } catch(e) {}
+      }
+      components.push(new ActionRowBuilder().addComponents(btnBuilder));
     }
 
     await channel.send({ embeds: [embed], components });
 
     auditLogger.log('embed_sent', `Embed personalizado enviado en #${channel.name} por ${req.session.username}`, {
-      channelId, user: req.session.username,
+      channelId, user: req.session.username, fields: fields.length,
     });
 
     res.json({ success: true, message: `Embed enviado en #${channel.name}` });
   } catch (err) {
+    console.error('[send-custom-embed]', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -258,6 +286,24 @@ app.post('/api/security', requireAuth, requireAdmin, (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── API: GUILD EMOJIS ─────────────────────────────────────────────
+app.get('/api/guild-emojis', requireAuth, async (req, res) => {
+  try {
+    const client = app.get('discordClient');
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID);
+    await guild.emojis.fetch();
+    const emojis = guild.emojis.cache.map(e => ({
+      id:       e.id,
+      name:     e.name,
+      animated: e.animated,
+      url:      e.imageURL({ size: 64 }),
+    }));
+    res.json({ emojis });
+  } catch (err) {
+    res.status(500).json({ emojis: [], error: err.message });
   }
 });
 

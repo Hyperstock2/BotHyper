@@ -1,535 +1,984 @@
-/* ═══════════════════════════════════════════════════════════════
-   HYPERSTOCK PANEL — DASHBOARD JS
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   HYPERSTOCK PANEL — DASHBOARD v3.0
+   ═══════════════════════════════════════════════════════════════════════ */
 
-// ── ESTADO GLOBAL ─────────────────────────────────────────────────
-let currentPage = 'home';
-let sessionData = {};
-let editorColor = '#5865f2';
-let editorEmoji = 'none';
-let allChannels = [];
+'use strict';
 
-const EMBED_TEMPLATES = {
+// ─── STATE ───────────────────────────────────────────────────────────────
+const state = {
+  page:        'home',
+  session:     {},
+  channels:    [],
+  serverEmojis:[],
+  color:       '#6366f1',
+  fields:      [],
+  drafts:      JSON.parse(localStorage.getItem('hs_drafts') || '[]'),
+  draftTimer:  null,
+  saving:      false,
+};
+
+// ─── EMOJI DATABASE (Unicode frecuentes) ─────────────────────────────────
+const UNICODE_EMOJIS = [
+  {e:'😀',n:'grinning'},{e:'😂',n:'joy'},{e:'🥰',n:'smiling hearts'},
+  {e:'😎',n:'cool'},{e:'🤩',n:'star struck'},{e:'🎉',n:'party'},
+  {e:'🔥',n:'fire'},{e:'⚡',n:'zap'},{e:'💎',n:'gem'},
+  {e:'💰',n:'money bag'},{e:'💳',n:'credit card'},{e:'🛒',n:'shopping cart'},
+  {e:'🎁',n:'gift'},{e:'🎨',n:'palette'},{e:'🎫',n:'ticket'},
+  {e:'✅',n:'check mark'},{e:'❌',n:'cross mark'},{e:'⚠️',n:'warning'},
+  {e:'🛡️',n:'shield'},{e:'🔒',n:'locked'},{e:'🔓',n:'unlocked'},
+  {e:'🚀',n:'rocket'},{e:'⭐',n:'star'},{e:'🌟',n:'glowing star'},
+  {e:'💫',n:'dizzy'},{e:'🏆',n:'trophy'},{e:'🥇',n:'first medal'},
+  {e:'👑',n:'crown'},{e:'💪',n:'muscle'},{e:'👍',n:'thumbs up'},
+  {e:'🤝',n:'handshake'},{e:'🙏',n:'folded hands'},{e:'💯',n:'hundred'},
+  {e:'📢',n:'loudspeaker'},{e:'📣',n:'megaphone'},{e:'📨',n:'inbox'},
+  {e:'📩',n:'envelope'},{e:'📋',n:'clipboard'},{e:'📌',n:'pushpin'},
+  {e:'🔔',n:'bell'},{e:'🔕',n:'no bell'},{e:'🛠️',n:'hammer wrench'},
+  {e:'⚙️',n:'gear'},{e:'🔧',n:'wrench'},{e:'📊',n:'bar chart'},
+  {e:'📈',n:'chart up'},{e:'📉',n:'chart down'},{e:'🏪',n:'store'},
+  {e:'💼',n:'briefcase'},{e:'🌐',n:'globe'},{e:'💻',n:'laptop'},
+  {e:'📱',n:'phone'},{e:'🖥️',n:'desktop'},{e:'⌨️',n:'keyboard'},
+  {e:'🇵🇪',n:'Peru'},{e:'🇨🇴',n:'Colombia'},{e:'🇲🇽',n:'Mexico'},
+  {e:'🇦🇷',n:'Argentina'},{e:'🇨🇱',n:'Chile'},{e:'🇧🇷',n:'Brazil'},
+  {e:'🪙',n:'coin'},{e:'💵',n:'dollar'},{e:'💴',n:'yen'},{e:'💶',n:'euro'},
+  {e:'🔨',n:'hammer'},{e:'👢',n:'boot'},{e:'🚫',n:'no entry'},
+  {e:'✏️',n:'pencil'},{e:'🗑️',n:'wastebasket'},{e:'🎯',n:'target'},
+  {e:'💡',n:'bulb'},{e:'🌙',n:'moon'},{e:'☀️',n:'sun'},{e:'❄️',n:'snowflake'},
+];
+
+// ─── EMBED TEMPLATES ─────────────────────────────────────────────────────
+const TEMPLATES = {
   tickets: {
-    authorEmoji: '🏪', authorName: 'Hyper Stock',
-    title: 'Bienvenido al sistema de tickets de Hyper Stock',
-    description:
-      'Abre un ticket para comprar productos, recibir soporte o resolver dudas.\n\n' +
-      '**Antes de abrir un ticket:**\n• Selecciona la categoría adecuada.\n' +
-      '• Explica tu solicitud con claridad.\n• Espera a que un miembro del staff te atienda.\n\n' +
-      '**Importante:** Hyper Stock no se hace responsable de problemas o acuerdos realizados fuera de nuestro equipo oficial.',
-    image: '', color: '#5865f2', footer: '» Tickets', tagEmoji: 'none', tag: '',
+    authorEmoji:'🏪', authorName:'Hyper Stock', authorUrl:'', authorIcon:'',
+    title:'Bienvenido al sistema de tickets de Hyper Stock', titleUrl:'',
+    description:'Abre un ticket para comprar productos, recibir soporte o resolver dudas.\n\n**Antes de abrir un ticket:**\n• Selecciona la categoría adecuada.\n• Explica tu solicitud con claridad.\n• Espera a que un miembro del staff te atienda.\n\n**Importante:** Hyper Stock no se hace responsable de problemas o acuerdos realizados fuera de nuestro equipo oficial.',
+    fields:[], image:'', thumb:'', footer:'» Tickets', footerIcon:'',
+    color:'#6366f1', btnType:'none', btnEmoji:'', btnText:'', btnStyle:'Primary',
   },
   metodos: {
-    authorEmoji: '🏪', authorName: 'HyperStock Metodos',
-    title: 'MÉTODOS DE PAGO',
-    description:
-      'Binance 🪙 • PayPal 💙\nYape 🇵🇪\nMercado Pago 🛒\n🇲🇽 🇦🇷 🇨🇱 🇨🇴\nNequi 🇨🇴\nLitecoin 💚',
-    image: '', color: '#5865f2', footer: '» Metodos', tagEmoji: '💳', tag: 'Metodos',
+    authorEmoji:'🏪', authorName:'HyperStock Metodos', authorUrl:'', authorIcon:'',
+    title:'MÉTODOS DE PAGO', titleUrl:'',
+    description:'Binance 🪙 • PayPal 💙\nYape 🇵🇪\nMercado Pago 🛒\n🇲🇽 🇦🇷 🇨🇱 🇨🇴\nNequi 🇨🇴\nLitecoin 💚',
+    fields:[], image:'', thumb:'', footer:'» Metodos', footerIcon:'',
+    color:'#6366f1', btnType:'none', btnEmoji:'💳', btnText:'Metodos', btnStyle:'Secondary',
   },
   diamantes: {
-    authorEmoji: '🏪', authorName: 'Hyper Stock',
-    title: 'Venta De Diamantes',
-    description:
-      '🎁 **Diamantes Sin Previa Verificacion De ID**\n\n' +
-      '🎁 No necesitamos tu cuenta, solamente tu ID\n🎁 Recargas disponibles a precios económicos\n🎁 Entrega rápida y segura\n\n' +
-      '💎 **Precios**\n💎 100 + 10 Diamantes = S/.4.5\n💎 310 + 31 Diamantes = S/.13\n' +
-      '💎 520 + 52 Diamantes = S/.18.5\n💎 1060 + 106 Diamantes = S/.32\n' +
-      '💎 2180 + 218 Diamantes = S/.53\n💎 5600 + 560 Diamantes = S/.125',
-    image: '', color: '#5865f2', footer: '» Adquirir', tagEmoji: '💎', tag: 'Adquirir',
+    authorEmoji:'🏪', authorName:'Hyper Stock', authorUrl:'', authorIcon:'',
+    title:'Venta De Diamantes', titleUrl:'',
+    description:'🎁 **Diamantes Sin Previa Verificacion De ID**\n\n🎁 No necesitamos tu cuenta, solamente tu ID\n🎁 Recargas disponibles a precios económicos\n🎁 Entrega rápida y segura\n\n💎 **Precios**\n💎 100 + 10 Diamantes = S/.4.5\n💎 310 + 31 Diamantes = S/.13\n💎 520 + 52 Diamantes = S/.18.5\n💎 1060 + 106 Diamantes = S/.32\n💎 2180 + 218 Diamantes = S/.53\n💎 5600 + 560 Diamantes = S/.125',
+    fields:[], image:'', thumb:'', footer:'» Adquirir', footerIcon:'',
+    color:'#6366f1', btnType:'button', btnEmoji:'💎', btnText:'Adquirir', btnStyle:'Primary',
   },
   decoraciones: {
-    authorEmoji: '🏪', authorName: 'Hyper Stock',
-    title: 'Método de Decoraciones al 60% de Descuento 🎁',
-    description:
-      '¿Te preguntas cómo funciona?\n\n' +
-      '» El método consiste en adquirir decoraciones de Discord mediante regalos, pagando un 60% menos de su precio habitual.\n\n' +
-      '**¿Qué incluye?**\n» El método completo para que puedas realizar el proceso por tu cuenta.\n\n' +
-      '» **Precio del método completo: $20 USD**\n\n' +
-      '¿Qué esperas para conseguir tus decoraciones a un precio más económico?\n\n' +
-      '✅ **Adquiere el método completo y descubre cómo funciona.**',
-    image: '', color: '#8b5cf6', footer: '» Decoraciones', tagEmoji: '🎨', tag: 'Decoraciones',
+    authorEmoji:'🏪', authorName:'Hyper Stock', authorUrl:'', authorIcon:'',
+    title:'Método de Decoraciones al 60% de Descuento 🎁', titleUrl:'',
+    description:'¿Te preguntas cómo funciona?\n\n» El método consiste en adquirir decoraciones de Discord mediante regalos, pagando un 60% menos de su precio habitual.\n\n**¿Qué incluye?**\n» El método completo para que puedas realizar el proceso por tu cuenta.\n\n» **Precio del método completo: $20 USD**\n\n¿Qué esperas para conseguir tus decoraciones a un precio más económico?\n\n✅ **Adquiere el método completo y descubre cómo funciona.**',
+    fields:[], image:'', thumb:'', footer:'» Decoraciones', footerIcon:'',
+    color:'#7c3aed', btnType:'button', btnEmoji:'🎨', btnText:'Decoraciones', btnStyle:'Secondary',
   },
   boosts: {
-    authorEmoji: '🏪', authorName: 'Hyper Stock',
-    title: '',
-    description:
-      '¿Cansado de pagar precios exagerados por los boosts de Discord? 🔨\n\n' +
-      '¡Tengo la solución! 🎁\n\nVendo mi **método para conseguir boosts de Discord a precios económicos.**\n\n' +
-      '» **Precio del método: $20 💚**\n» **Precios Vendemos:**\n\n' +
-      '⚡ **Discord Boosts**\n· 14 Boosts — 1 mes\n· Precio: **$1.75**\n\n' +
-      '» **¿Quieres comprar boosts directamente?**\n\n' +
-      'Abre un ticket indicando la cantidad de boosts que necesitas y la duración. Nuestro staff te informará del precio.\n\n' +
-      '🔥 **¡Aprovecha estos precios!**',
-    image: '', color: '#5865f2', footer: '» Boost', tagEmoji: '⚡', tag: 'Boost',
+    authorEmoji:'🏪', authorName:'Hyper Stock', authorUrl:'', authorIcon:'',
+    title:'', titleUrl:'',
+    description:'¿Cansado de pagar precios exagerados por los boosts de Discord? 🔨\n\n¡Tengo la solución! 🎁\n\nVendo mi **método para conseguir boosts de Discord a precios económicos.**\n\n» **Precio del método: $20 💚**\n» **Precios Vendemos:**\n\n⚡ **Discord Boosts**\n· 14 Boosts — 1 mes\n· Precio: **$1.75**\n\n» **¿Quieres comprar boosts directamente?**\n\nAbre un ticket indicando la cantidad de boosts que necesitas y la duración. Nuestro staff te informará del precio.\n\n🔥 **¡Aprovecha estos precios!**',
+    fields:[], image:'', thumb:'', footer:'» Boost', footerIcon:'',
+    color:'#6366f1', btnType:'button', btnEmoji:'⚡', btnText:'Boost', btnStyle:'Primary',
   },
 };
 
 const EMBED_LIST = [
-  { type: 'tickets',      label: '🎫 Sistema de Tickets' },
-  { type: 'metodos',      label: '💳 Métodos de Pago' },
-  { type: 'diamantes',    label: '💎 Venta de Diamantes' },
-  { type: 'decoraciones', label: '🎨 Decoraciones Discord' },
-  { type: 'boosts',       label: '⚡ Discord Boosts' },
+  {type:'tickets',     label:'🎫 Sistema de Tickets'},
+  {type:'metodos',     label:'💳 Métodos de Pago'},
+  {type:'diamantes',   label:'💎 Venta de Diamantes'},
+  {type:'decoraciones',label:'🎨 Decoraciones Discord'},
+  {type:'boosts',      label:'⚡ Discord Boosts'},
 ];
 
-// ── INIT ──────────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadSession();
-  await loadChannels();
+  await Promise.all([loadSession(), loadChannels()]);
   renderEmbedCards();
   loadHome();
+  initEmojiGrids();
+  renderDraftBar();
+  // Show btn options based on default
+  document.getElementById('editor-btn-type').addEventListener('change', () => {
+    const val = document.getElementById('editor-btn-type').value;
+    document.getElementById('btn-options').style.display = val === 'button' ? 'block' : 'none';
+    updatePreview();
+  });
+  // Close emoji panels on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.emoji-picker-wrap')) closeAllEmojiPanels();
+  });
 });
 
-// ── SESSION ───────────────────────────────────────────────────────
+// ─── SESSION ──────────────────────────────────────────────────────────────
 async function loadSession() {
-  const data = await api('/api/me');
-  if (!data) return;
-  sessionData = data;
-  document.getElementById('user-name').textContent   = data.username;
-  document.getElementById('user-role').textContent   = data.role;
-  document.getElementById('user-avatar').textContent = data.username[0].toUpperCase();
+  const d = await api('/api/me');
+  if (!d) return;
+  state.session = d;
+  $('user-name').textContent  = d.username;
+  $('user-role').textContent  = d.role;
+  $('user-avatar').textContent = d.username[0].toUpperCase();
 
-  if (data.role === 'admin') {
-    document.getElementById('admin-section').style.display = '';
-    document.getElementById('nav-users').style.display    = '';
-    document.getElementById('nav-security').style.display = '';
-    document.getElementById('nav-logs').style.display     = '';
-  } else if (data.permissions?.includes('view_logs')) {
-    document.getElementById('nav-logs').style.display = '';
+  if (d.role === 'admin') {
+    show('admin-section'); show('nav-users'); show('nav-security'); show('nav-logs');
+  } else if (d.permissions?.includes('view_logs')) {
+    show('nav-logs');
   }
 }
 
-// ── NAVIGATION ────────────────────────────────────────────────────
+// ─── NAVIGATION ───────────────────────────────────────────────────────────
 const PAGE_TITLES = {
-  home:     '🏠 Inicio',
-  embeds:   '📨 Enviar Embeds',
-  editor:   '✏️ Editor de Embeds',
-  tickets:  '🎫 Tickets',
-  users:    '👥 Usuarios',
-  security: '🛡️ Seguridad',
-  logs:     '📋 Logs de Auditoría',
+  home:'Inicio', embeds:'Enviar Embeds', editor:'Editor de Embeds',
+  tickets:'Tickets', users:'Usuarios', security:'Seguridad', logs:'Logs',
 };
 
 function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name)?.classList.add('active');
-  document.getElementById('nav-'  + name)?.classList.add('active');
-  document.getElementById('page-title').textContent = PAGE_TITLES[name] || name;
-  currentPage = name;
+  qsa('.page').forEach(p => p.classList.remove('active'));
+  qsa('.nav-btn').forEach(n => n.classList.remove('active'));
+  $('page-' + name)?.classList.add('active');
+  $('nav-' + name)?.classList.add('active');
+  $('page-title').textContent = PAGE_TITLES[name] || name;
+  state.page = name;
 
-  // Cargar datos según la página
   if (name === 'home')     loadHome();
   if (name === 'users')    loadUsers();
   if (name === 'logs')     loadLogs();
   if (name === 'security') loadSecurity();
-  if (name === 'editor')   populateEditorChannels();
-  if (name === 'tickets')  populateTicketChannel();
 }
 
-// ── HOME ──────────────────────────────────────────────────────────
+// ─── HOME ─────────────────────────────────────────────────────────────────
 async function loadHome() {
-  const guild = await api('/api/guild');
-  if (!guild) return;
+  const g = await api('/api/guild');
+  if (!g) return;
 
-  document.getElementById('guild-name').textContent        = guild.name;
-  document.getElementById('meta-members').textContent      = `${guild.memberCount.toLocaleString()} miembros`;
-  document.getElementById('meta-channels').textContent     = `${guild.channelCount} canales`;
-  document.getElementById('meta-created').textContent      = `Creado ${new Date(guild.createdAt).toLocaleDateString('es')}`;
-  document.getElementById('boost-badge').textContent       = `🚀 Boost Tier ${guild.boostTier} · ${guild.boostCount} boosts`;
+  $('guild-name').textContent   = g.name;
+  $('meta-members').textContent = g.memberCount.toLocaleString();
+  $('meta-channels').textContent= g.channelCount;
+  $('meta-roles').textContent   = g.roleCount;
+  $('meta-created').textContent = new Date(g.createdAt).toLocaleDateString('es');
+  $('boost-badge').textContent  = `🚀 Tier ${g.boostTier} · ${g.boostCount} boosts`;
 
-  document.getElementById('stat-members').textContent  = guild.memberCount.toLocaleString();
-  document.getElementById('stat-channels').textContent = guild.channelCount;
-  document.getElementById('stat-roles').textContent    = guild.roleCount;
-  document.getElementById('stat-uptime').textContent   = guild.uptime;
-  document.getElementById('stat-boosts').textContent   = guild.boostCount;
-  document.getElementById('stat-ping').textContent     = guild.ping;
+  $('stat-members').textContent  = g.memberCount.toLocaleString();
+  $('stat-channels').textContent = g.channelCount;
+  $('stat-roles').textContent    = g.roleCount;
+  $('stat-uptime').textContent   = g.uptime;
+  $('stat-boosts').textContent   = g.boostCount;
+  $('stat-ping').textContent     = g.ping;
 
-  document.getElementById('guild-info').innerHTML = `
-    <div class="info-row"><span class="info-row-key">👑 Owner ID</span><span class="info-row-val">${guild.ownerId}</span></div>
-    <div class="info-row"><span class="info-row-key">📢 Canales</span><span class="info-row-val">${guild.channelCount}</span></div>
-    <div class="info-row"><span class="info-row-key">🎭 Roles</span><span class="info-row-val">${guild.roleCount}</span></div>
-    <div class="info-row"><span class="info-row-key">🚀 Boost Tier</span><span class="info-row-val">${guild.boostTier}</span></div>
-    <div class="info-row"><span class="info-row-key">⚡ Ping API</span><span class="info-row-val">${guild.ping}</span></div>
-    <div class="info-row"><span class="info-row-key">📅 Creado</span><span class="info-row-val">${new Date(guild.createdAt).toLocaleDateString('es')}</span></div>
-  `;
+  $('guild-info').innerHTML = [
+    ['👑','Owner ID', g.ownerId],
+    ['📢','Canales', g.channelCount],
+    ['🎭','Roles', g.roleCount],
+    ['🚀','Boost Tier', g.boostTier],
+    ['⚡','Ping', g.ping],
+    ['📅','Creado', new Date(g.createdAt).toLocaleDateString('es')],
+  ].map(([ico,k,v])=>`
+    <div class="info-row">
+      <span class="info-key">${ico} ${k}</span>
+      <span class="info-val">${v}</span>
+    </div>`).join('');
 
-  // últimos logs
-  const logs = await api('/api/logs?limit=5');
-  const container = document.getElementById('home-logs');
-  if (!logs?.length) return;
-  container.innerHTML = logs.map(renderLogItem).join('');
+  const logs = await api('/api/logs?limit=6');
+  $('home-logs').innerHTML = logs?.length
+    ? logs.map(renderLogItem).join('')
+    : '<div class="empty-state"><div class="empty-ico">📋</div><p>Sin actividad reciente</p></div>';
 }
 
-// ── CHANNELS ──────────────────────────────────────────────────────
+// ─── CHANNELS ─────────────────────────────────────────────────────────────
 async function loadChannels() {
-  const channels = await api('/api/channels');
-  if (!channels) return;
-  allChannels = channels;
-
-  const selectors = ['channelSelect', 'editor-channel', 'ticket-channel', 'log-channel-select'];
-  selectors.forEach(id => {
-    const el = document.getElementById(id);
+  const ch = await api('/api/channels');
+  if (!ch) return;
+  state.channels = ch;
+  ['channelSelect','editor-channel','ticket-channel','log-channel-select'].forEach(id => {
+    const el = $(id);
     if (!el) return;
-    const placeholder = el.querySelector('option[value=""]');
+    const first = el.querySelector('option[value=""]');
     el.innerHTML = '';
-    if (placeholder) el.appendChild(placeholder);
-    channels.forEach(ch => {
-      const opt = document.createElement('option');
-      opt.value = ch.id; opt.textContent = '# ' + ch.name;
-      el.appendChild(opt);
+    if (first) el.appendChild(first);
+    ch.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = '# ' + c.name;
+      el.appendChild(o);
     });
   });
 }
 
-function populateEditorChannels() { /* ya cargados en loadChannels */ }
-function populateTicketChannel()  { /* ya cargados en loadChannels */ }
-
-// ── EMBEDS GRID ───────────────────────────────────────────────────
+// ─── EMBEDS GRID ──────────────────────────────────────────────────────────
 function renderEmbedCards() {
-  const grid = document.getElementById('embeds-grid');
-  grid.innerHTML = EMBED_LIST.map(e => `
-    <div class="embed-card">
-      <div class="embed-preview">
-        <div class="embed-inner">
-          <div class="embed-stripe" style="background:${EMBED_TEMPLATES[e.type]?.color || '#5865f2'}"></div>
-          <div class="embed-body">
-            <div class="embed-author-row">
-              <span class="embed-author-icon">${EMBED_TEMPLATES[e.type]?.authorEmoji || '🏪'}</span>
-              <span class="embed-author-name">${EMBED_TEMPLATES[e.type]?.authorName || 'Hyper Stock'}</span>
+  const grid = $('embeds-grid');
+  if (!grid) return;
+  grid.innerHTML = EMBED_LIST.map(e => {
+    const t = TEMPLATES[e.type];
+    return `
+    <div class="embed-card interactive">
+      <div class="embed-preview-area">
+        <div class="dc-preview">
+          <div class="dc-inner">
+            <div class="dc-bar" style="background:${t.color}"></div>
+            <div class="dc-body">
+              <div class="dc-author">
+                <span class="dc-author-ico">${t.authorEmoji}</span>
+                <span class="dc-author-name">${t.authorName}</span>
+              </div>
+              ${t.title?`<div class="dc-title">${t.title}</div>`:''}
+              <div class="dc-desc">${(t.description||'').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>').slice(0,220)}${(t.description||'').length>220?'…':''}</div>
+              ${t.footer?`<div class="dc-tag">${t.footer}</div>`:''}
             </div>
-            ${EMBED_TEMPLATES[e.type]?.title ? `<div class="embed-title-text">${EMBED_TEMPLATES[e.type].title}</div>` : ''}
-            <div class="embed-desc-text">${(EMBED_TEMPLATES[e.type]?.description || '').replace(/\n/g,'<br>').slice(0,200)}${EMBED_TEMPLATES[e.type]?.description?.length > 200 ? '...' : ''}</div>
-            ${EMBED_TEMPLATES[e.type]?.footer ? `<div class="embed-tag">${EMBED_TEMPLATES[e.type].footer}</div>` : ''}
           </div>
         </div>
       </div>
-      <div class="embed-actions">
-        <span class="embed-name">${e.label}</span>
-        <button class="btn btn-accent btn-sm" onclick="sendEmbed('${e.type}', this)">📨 Enviar</button>
+      <div class="embed-foot">
+        <span class="embed-foot-name">${e.label}</span>
+        <button class="btn btn-primary btn-sm" onclick="sendEmbed('${e.type}', this)">📨 Enviar</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function sendEmbed(type, btn) {
-  const channelId = document.getElementById('channelSelect').value;
-  if (!channelId) { toast('⚠️ Selecciona un canal primero', 'error'); return; }
-  btn.disabled = true; btn.textContent = 'Enviando...';
-  const data = await api('/api/send-embed', 'POST', { channelId, embedType: type });
+  const channelId = $('channelSelect')?.value;
+  if (!channelId) { toast('⚠️ Selecciona un canal primero', 'warn'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Enviando...';
+  const d = await api('/api/send-embed', 'POST', { channelId, embedType: type });
   btn.disabled = false; btn.textContent = '📨 Enviar';
-  if (data?.success) toast('✅ ' + data.message, 'success');
-  else toast('❌ ' + (data?.error || 'Error'), 'error');
+  d?.success ? toast('✅ ' + d.message, 'success') : toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
-// ── TICKET EMBED ──────────────────────────────────────────────────
 async function deployTicketEmbed() {
-  const channelId = document.getElementById('ticket-channel').value;
-  if (!channelId) { toast('⚠️ Selecciona un canal', 'error'); return; }
-  const data = await api('/api/send-embed', 'POST', { channelId, embedType: 'tickets' });
-  if (data?.success) toast('✅ Sistema de tickets desplegado', 'success');
-  else toast('❌ ' + (data?.error || 'Error'), 'error');
+  const cid = $('ticket-channel')?.value;
+  if (!cid) { toast('⚠️ Selecciona un canal', 'warn'); return; }
+  const d = await api('/api/send-embed', 'POST', { channelId: cid, embedType: 'tickets' });
+  d?.success ? toast('✅ Sistema de tickets desplegado', 'success') : toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
-// ── EDITOR DE EMBEDS ──────────────────────────────────────────────
+// ─── EDITOR TABS ──────────────────────────────────────────────────────────
+function switchEditorTab(name, btn) {
+  qsa('.editor-tab').forEach(t => t.classList.remove('active'));
+  qsa('.editor-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  $('epanel-' + name)?.classList.add('active');
+}
+
+// ─── TEMPLATE LOADER ──────────────────────────────────────────────────────
 function loadTemplate() {
-  const type = document.getElementById('editor-template').value;
+  const type = $('editor-template')?.value;
   if (!type) { clearEditor(); return; }
-  const t = EMBED_TEMPLATES[type];
+  const t = TEMPLATES[type];
   if (!t) return;
+  setVal('editor-author-emoji', t.authorEmoji || '');
+  setVal('editor-author-name',  t.authorName  || '');
+  setVal('editor-author-url',   t.authorUrl   || '');
+  setVal('editor-author-icon',  t.authorIcon  || '');
+  setVal('editor-title',        t.title       || '');
+  setVal('editor-title-url',    t.titleUrl    || '');
+  setVal('editor-desc',         t.description || '');
+  setVal('editor-image',        t.image       || '');
+  setVal('editor-thumb',        t.thumb       || '');
+  setVal('editor-footer',       t.footer      || '');
+  setVal('editor-footer-icon',  t.footerIcon  || '');
+  setVal('editor-btn-emoji',    t.btnEmoji    || '');
+  setVal('editor-tag',          t.btnText     || '');
+  setVal('editor-btn-type',     t.btnType     || 'none');
+  setVal('editor-btn-style',    t.btnStyle    || 'Primary');
 
-  document.getElementById('editor-author-emoji').value = t.authorEmoji || '';
-  document.getElementById('editor-author-name').value  = t.authorName  || '';
-  document.getElementById('editor-title').value        = t.title        || '';
-  document.getElementById('editor-desc').value         = t.description  || '';
-  document.getElementById('editor-image').value        = t.image        || '';
-  document.getElementById('editor-footer').value       = t.footer       || '';
-  document.getElementById('editor-tag').value          = t.tag          || '';
+  $('btn-options').style.display = t.btnType === 'button' ? 'block' : 'none';
 
-  pickColorRaw(t.color || '#5865f2');
-
-  document.querySelectorAll('.emoji-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.emoji === (t.tagEmoji || 'none'));
-  });
-  editorEmoji = t.tagEmoji || 'none';
-
+  state.fields = (t.fields || []).map((f, i) => ({...f, id: Date.now() + i}));
+  renderFields();
+  pickColorRaw(t.color || '#6366f1');
   updatePreview();
+  toast('📋 Plantilla "' + type + '" cargada', 'info');
 }
 
 function clearEditor() {
-  ['editor-author-emoji','editor-author-name','editor-title','editor-desc',
-   'editor-image','editor-thumb','editor-footer','editor-footer-icon','editor-tag']
-    .forEach(id => { document.getElementById(id).value = ''; });
-  pickColorRaw('#5865f2');
+  ['editor-author-emoji','editor-author-name','editor-author-url','editor-author-icon',
+   'editor-title','editor-title-url','editor-desc','editor-image','editor-thumb',
+   'editor-footer','editor-footer-icon','editor-btn-emoji','editor-tag',
+  ].forEach(id => setVal(id, ''));
+  setVal('editor-btn-type', 'none');
+  $('btn-options').style.display = 'none';
+  state.fields = [];
+  renderFields();
+  pickColorRaw('#6366f1');
   updatePreview();
 }
 
+// ─── COLOR ────────────────────────────────────────────────────────────────
 function pickColor(el) {
-  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  qsa('.c-swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
-  editorColor = el.dataset.color;
-  document.getElementById('editor-color-picker').value = editorColor;
+  state.color = el.dataset.col;
+  syncColorUI(state.color);
   updatePreview();
 }
 
 function pickColorRaw(val) {
-  editorColor = val;
-  document.getElementById('editor-color-picker').value = val;
-  document.querySelectorAll('.swatch').forEach(s => {
-    s.classList.toggle('active', s.dataset.color === val);
-  });
+  state.color = val;
+  qsa('.c-swatch').forEach(s => s.classList.toggle('active', s.dataset.col === val));
+  syncColorUI(val);
   updatePreview();
 }
 
-function pickEmoji(el) {
-  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  editorEmoji = el.dataset.emoji;
-  updatePreview();
+function pickColorFromHex(val) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(val)) return;
+  pickColorRaw(val);
 }
 
+function syncColorUI(val) {
+  const hex = $('editor-color-hex'); if (hex) hex.value = val;
+  const pic = $('editor-color-picker'); if (pic) pic.value = val;
+  const prev = $('color-preview'); if (prev) prev.style.background = val;
+}
+
+// ─── FIELDS ───────────────────────────────────────────────────────────────
+function addField() {
+  if (state.fields.length >= 25) { toast('⚠️ Máximo 25 campos por embed', 'warn'); return; }
+  state.fields.push({ id: Date.now(), name: '', value: '', inline: false });
+  renderFields();
+  updatePreview();
+  autoSaveDraft();
+}
+
+function removeField(id) {
+  state.fields = state.fields.filter(f => f.id !== id);
+  renderFields();
+  updatePreview();
+  autoSaveDraft();
+}
+
+function updateField(id, key, val) {
+  const f = state.fields.find(f => f.id === id);
+  if (f) { f[key] = val; updatePreview(); autoSaveDraft(); }
+}
+
+function renderFields() {
+  const list = $('fields-list');
+  if (!list) return;
+  $('fields-counter').textContent = `(${state.fields.length}/25)`;
+  if (!state.fields.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-ico" style="font-size:28px">📊</div><p>Sin campos. Agrega uno abajo.</p></div>';
+    return;
+  }
+  list.innerHTML = state.fields.map((f, i) => `
+    <div class="field-item" id="fi-${f.id}">
+      <div class="field-item-hdr">
+        <span class="field-item-num">Campo ${i+1}</span>
+        <div class="field-item-actions">
+          <button class="btn btn-ghost btn-xs btn-icon" onclick="duplicateField(${f.id})" title="Duplicar">⧉</button>
+          <button class="btn btn-danger btn-xs btn-icon" onclick="removeField(${f.id})" title="Eliminar">✕</button>
+        </div>
+      </div>
+      <div class="field-2">
+        <div>
+          <label class="label">Nombre del campo</label>
+          <input class="input" value="${escHtml(f.name)}" placeholder="Nombre..." maxlength="256"
+            oninput="updateField(${f.id},'name',this.value)"/>
+        </div>
+        <div>
+          <label class="label">Valor del campo</label>
+          <textarea class="textarea" style="min-height:60px" maxlength="1024"
+            oninput="updateField(${f.id},'value',this.value)">${escHtml(f.value)}</textarea>
+        </div>
+      </div>
+      <label class="field-inline-toggle">
+        <input type="checkbox" ${f.inline?'checked':''} onchange="updateField(${f.id},'inline',this.checked)"/>
+        Campo inline (aparece junto a otros campos inline)
+      </label>
+    </div>
+  `).join('');
+}
+
+function duplicateField(id) {
+  const f = state.fields.find(f => f.id === id);
+  if (!f) return;
+  state.fields.push({...f, id: Date.now()});
+  renderFields(); updatePreview();
+}
+
+// ─── EMOJI SYSTEM ─────────────────────────────────────────────────────────
+function initEmojiGrids() {
+  // Cargar emojis del servidor
+  loadServerEmojis();
+  // Renderizar grids unicode por defecto
+  renderEmojiGrid('author-emoji-grid', UNICODE_EMOJIS, 'author');
+  renderEmojiGrid('desc-emoji-grid',   UNICODE_EMOJIS, 'desc');
+  renderEmojiGrid('btn-emoji-grid',    UNICODE_EMOJIS, 'btn');
+}
+
+async function loadServerEmojis() {
+  const ch = await api('/api/guild-emojis').catch(() => null);
+  if (ch?.emojis) state.serverEmojis = ch.emojis;
+}
+
+function renderEmojiGrid(gridId, emojis, context) {
+  const grid = $(gridId);
+  if (!grid) return;
+  if (!emojis?.length) {
+    grid.innerHTML = '<div class="custom-emoji-empty">Sin emojis disponibles</div>';
+    return;
+  }
+  grid.innerHTML = emojis.map(e => {
+    if (e.id) {
+      // Custom Discord emoji
+      const url = `https://cdn.discordapp.com/emojis/${e.id}.${e.animated?'gif':'webp'}?size=32`;
+      return `<div class="emoji-item custom-emoji" onclick="insertEmoji('${context}','<${e.animated?'a':''}:${e.name}:${e.id}>','${e.name}','${e.id}')" title="${e.name}">
+        <img src="${url}" alt="${e.name}" onerror="this.parentElement.remove()"/>
+      </div>`;
+    }
+    return `<div class="emoji-item" onclick="insertEmoji('${context}','${e.e}','${e.n}','')" title="${e.n}">${e.e}</div>`;
+  }).join('');
+}
+
+function filterEmojis(ctx, query) {
+  const q = query.toLowerCase();
+  const filtered = UNICODE_EMOJIS.filter(e => e.n.includes(q) || e.e.includes(q));
+  const sFiltered = state.serverEmojis.filter(e => e.name.toLowerCase().includes(q));
+  const gridId = ctx === 'author' ? 'author-emoji-grid' : ctx === 'desc' ? 'desc-emoji-grid' : 'btn-emoji-grid';
+  const combined = [...filtered, ...sFiltered.map(e => ({...e, e: '', n: e.name}))];
+  renderEmojiGrid(gridId, combined.length ? combined : filtered, ctx);
+}
+
+function insertEmoji(context, emoji, name, id) {
+  if (context === 'author') {
+    setVal('editor-author-emoji', emoji);
+    $('author-emoji-display').textContent = id ? '⚡' : emoji;
+    $('author-emoji-prev').textContent    = id ? '⚡' : emoji;
+    $('author-emoji-name').textContent    = name;
+    $('author-emoji-code').textContent    = id ? `ID: ${id}` : `U+${emoji.codePointAt(0)?.toString(16).toUpperCase()}`;
+    closeAllEmojiPanels();
+    updatePreview();
+  } else if (context === 'desc') {
+    const ta = $('editor-desc');
+    if (ta) {
+      const s = ta.selectionStart, e = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + emoji + ta.value.slice(e);
+      ta.selectionStart = ta.selectionEnd = s + emoji.length;
+      $('desc-emoji-prev').textContent = id ? '⚡' : emoji;
+      $('desc-emoji-name').textContent = name;
+    }
+    updatePreview(); autoSaveDraft();
+  } else if (context === 'btn') {
+    setVal('editor-btn-emoji', emoji);
+    $('btn-emoji-display').textContent = id ? '⚡' : emoji;
+    $('btn-emoji-prev').textContent    = id ? '⚡' : emoji;
+    $('btn-emoji-name').textContent    = name;
+    closeAllEmojiPanels();
+    updatePreview();
+  }
+}
+
+function toggleEmojiPanel(id) {
+  const p = $(id);
+  if (!p) return;
+  const wasOpen = p.classList.contains('open');
+  closeAllEmojiPanels();
+  if (!wasOpen) p.classList.add('open');
+}
+
+function closeAllEmojiPanels() {
+  qsa('.emoji-panel').forEach(p => p.classList.remove('open'));
+}
+
+function setEmojiTabAu(type, el) {
+  el.closest('.emoji-tabs').querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderEmojiGrid('author-emoji-grid', type === 'server' ? state.serverEmojis.map(e=>({...e,e:'',n:e.name})) : UNICODE_EMOJIS, 'author');
+}
+function setEmojiTabDesc(type, el) {
+  el.closest('.emoji-tabs').querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderEmojiGrid('desc-emoji-grid', type === 'server' ? state.serverEmojis.map(e=>({...e,e:'',n:e.name})) : UNICODE_EMOJIS, 'desc');
+}
+function setEmojiTabBtn(type, el) {
+  el.closest('.emoji-tabs').querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderEmojiGrid('btn-emoji-grid', type === 'server' ? state.serverEmojis.map(e=>({...e,e:'',n:e.name})) : UNICODE_EMOJIS, 'btn');
+}
+function onAuthorEmojiInput() { updatePreview(); autoSaveDraft(); }
+
+// ─── PREVIEW ──────────────────────────────────────────────────────────────
+let previewDebounce = null;
 function updatePreview() {
-  const authorEmoji = document.getElementById('editor-author-emoji').value || '🏪';
-  const authorName  = document.getElementById('editor-author-name').value  || 'Hyper Stock';
-  const title       = document.getElementById('editor-title').value;
-  const desc        = document.getElementById('editor-desc').value || 'El contenido del embed aparecerá aquí...';
-  const image       = document.getElementById('editor-image').value;
-  const footerText  = document.getElementById('editor-footer').value;
-  const footerIcon  = document.getElementById('editor-footer-icon')?.value || '';
-  const tag         = document.getElementById('editor-tag').value;
-
-  document.getElementById('prev-bar').style.background      = editorColor;
-  document.getElementById('prev-author-icon').textContent   = authorEmoji;
-  document.getElementById('prev-author-name').textContent   = authorName;
-
-  const titleEl = document.getElementById('prev-title');
-  titleEl.textContent = title; titleEl.style.display = title ? '' : 'none';
-
-  document.getElementById('prev-desc').innerHTML = desc.replace(/\n/g,'<br>');
-
-  const imgWrap = document.getElementById('prev-img-wrap');
-  const imgEl   = document.getElementById('prev-img');
-  if (image) { imgEl.src = image; imgWrap.style.display = ''; }
-  else        { imgWrap.style.display = 'none'; }
-
-  const footerRow = document.getElementById('prev-footer');
-  if (footerText) {
-    document.getElementById('prev-footer-icon').textContent = '';
-    document.getElementById('prev-footer-text').textContent = footerText;
-    footerRow.style.display = 'flex';
-  } else { footerRow.style.display = 'none'; }
-
-  const tagEl = document.getElementById('prev-tag');
-  if (tag) { tagEl.textContent = (editorEmoji !== 'none' ? editorEmoji + ' ' : '') + tag; tagEl.style.display = 'inline-block'; }
-  else      { tagEl.style.display = 'none'; }
+  clearTimeout(previewDebounce);
+  previewDebounce = setTimeout(_doUpdatePreview, 60);
 }
 
+function _doUpdatePreview() {
+  const v = id => ($(id)?.value || '').trim();
+
+  const authorEmoji = v('editor-author-emoji');
+  const authorName  = v('editor-author-name');
+  const title       = v('editor-title');
+  const desc        = v('editor-desc');
+  const image       = v('editor-image');
+  const thumb       = v('editor-thumb');
+  const footer      = v('editor-footer');
+  const footerIcon  = v('editor-footer-icon');
+  const btnType     = v('editor-btn-type');
+  const btnEmoji    = v('editor-btn-emoji');
+  const btnText     = v('editor-tag');
+  const btnStyle    = v('editor-btn-style');
+
+  // Bar
+  $('prev-bar').style.background = state.color;
+
+  // Author
+  const hasAuthor = authorEmoji || authorName;
+  toggleEl('prev-author-row', hasAuthor);
+  if (hasAuthor) {
+    $('prev-author-icon').textContent = authorEmoji || '';
+    $('prev-author-name').textContent = authorName  || '';
+  }
+
+  // Title
+  toggleEl('prev-title', !!title);
+  if (title) $('prev-title').textContent = title;
+
+  // Desc
+  if (desc) {
+    $('prev-desc').style.fontStyle = '';
+    $('prev-desc').style.color     = '';
+    $('prev-desc').innerHTML = formatDiscordMarkdown(desc);
+  } else {
+    $('prev-desc').style.fontStyle = 'italic';
+    $('prev-desc').style.color     = '#949ba4';
+    $('prev-desc').textContent     = 'El contenido aparecerá aquí...';
+  }
+
+  // Fields
+  const pf = $('prev-fields');
+  if (pf) {
+    if (state.fields.length) {
+      pf.style.display = '';
+      // Calcular columnas para inline
+      let colTemplate = '';
+      const inlineGroups = [];
+      let currentGroup = [];
+      state.fields.forEach(f => {
+        if (f.inline) {
+          currentGroup.push(f);
+          if (currentGroup.length === 3) { inlineGroups.push([...currentGroup]); currentGroup = []; }
+        } else {
+          if (currentGroup.length) { inlineGroups.push([...currentGroup]); currentGroup = []; }
+          inlineGroups.push([f]);
+        }
+      });
+      if (currentGroup.length) inlineGroups.push(currentGroup);
+
+      pf.innerHTML = inlineGroups.map(group => {
+        const cols = group[0].inline ? group.length : 1;
+        return `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px">${
+          group.map(f => `<div class="embed-field">
+            <div class="embed-field-name">${escHtml(f.name||'Campo')}</div>
+            <div class="embed-field-value">${escHtml(f.value||'—')}</div>
+          </div>`).join('')
+        }</div>`;
+      }).join('');
+    } else {
+      pf.style.display = 'none';
+    }
+  }
+
+  // Image
+  const pi = $('prev-img');
+  if (image && pi) {
+    pi.src = image; pi.style.display = '';
+    // Preview in media tab
+    const pw = $('image-preview-wrap'), pp = $('image-preview-img');
+    if (pw && pp) { pw.style.display=''; pp.src=image; }
+  } else if (pi) {
+    pi.style.display = 'none';
+    const pw = $('image-preview-wrap'); if (pw) pw.style.display='none';
+  }
+
+  // Thumbnail
+  const pt = $('prev-thumb');
+  if (thumb && pt) {
+    pt.src = thumb; pt.style.display = '';
+    const tw = $('thumb-preview-wrap'), ti = $('thumb-preview-img');
+    if (tw && ti) { tw.style.display=''; ti.src=thumb; }
+  } else if (pt) {
+    pt.style.display = 'none';
+    const tw = $('thumb-preview-wrap'); if (tw) tw.style.display='none';
+  }
+
+  // Footer
+  const pfoot = $('prev-footer');
+  if (footer && pfoot) {
+    pfoot.style.display = 'flex';
+    const fico = $('prev-footer-ico');
+    if (footerIcon && fico) { fico.src = footerIcon; fico.style.display=''; }
+    else if (fico) fico.style.display='none';
+    $('prev-footer-text').textContent = footer;
+  } else if (pfoot) {
+    pfoot.style.display = 'none';
+  }
+
+  // Button
+  const pb = $('prev-btn'), pbe = $('prev-btn-el');
+  if (btnType === 'button' && btnText && pbe) {
+    pb.style.display = '';
+    const STYLES = {Primary:'#5865f2',Secondary:'#4f545c',Success:'#3ba55c',Danger:'#ed4245'};
+    pbe.style.background = STYLES[btnStyle] || STYLES.Primary;
+    pbe.style.color = '#fff';
+    pbe.style.borderRadius = '4px';
+    pbe.textContent = (btnEmoji && btnEmoji !== 'none' ? btnEmoji + ' ' : '') + btnText;
+  } else if (pb) {
+    pb.style.display = 'none';
+  }
+
+  // Char counter
+  const total = [v('editor-title'),v('editor-author-name'),v('editor-desc'),v('editor-footer')].join('').length
+    + state.fields.reduce((a,f)=>a+f.name.length+f.value.length,0);
+  const tEl = $('embed-char-total');
+  if (tEl) {
+    tEl.textContent = `Caracteres totales: ${total} / 6000`;
+    tEl.style.color = total > 6000 ? 'var(--rose)' : total > 5500 ? 'var(--amber)' : '';
+  }
+
+  // Validate
+  runValidations(total);
+  autoSaveDraft();
+}
+
+function formatDiscordMarkdown(text) {
+  return escHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/__(.+?)__/g, '<u>$1</u>')
+    .replace(/~~(.+?)~~/g, '<s>$1</s>')
+    .replace(/`(.+?)`/g, '<code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+// ─── VALIDATIONS ──────────────────────────────────────────────────────────
+function runValidations(charTotal) {
+  const issues = [];
+  const v = id => ($(id)?.value || '').trim();
+  if (charTotal > 6000) issues.push({type:'error', msg:`Embed supera 6000 caracteres (${charTotal})`});
+  if (v('editor-title').length > 256) issues.push({type:'error', msg:'Título supera 256 caracteres'});
+  if (v('editor-desc').length > 4096) issues.push({type:'error', msg:'Descripción supera 4096 caracteres'});
+  if (v('editor-footer').length > 2048) issues.push({type:'warn', msg:'Footer supera 2048 caracteres'});
+  if (state.fields.length > 25) issues.push({type:'error', msg:'Más de 25 campos (límite Discord)'});
+  state.fields.forEach((f,i)=>{
+    if (f.name.length > 256) issues.push({type:'warn', msg:`Campo ${i+1}: nombre supera 256 chars`});
+    if (f.value.length > 1024) issues.push({type:'warn', msg:`Campo ${i+1}: valor supera 1024 chars`});
+  });
+
+  const vc = $('validation-card'), vl = $('validation-list');
+  if (vc) vc.style.display = issues.length ? '' : 'none';
+  if (vl) {
+    vl.innerHTML = issues.map(i=>`
+      <div class="row-gap t-sm" style="color:${i.type==='error'?'#fca5a5':'var(--amber)'}">
+        <span>${i.type==='error'?'❌':'⚠️'}</span> ${i.msg}
+      </div>`).join('');
+  }
+  return issues.filter(i=>i.type==='error').length === 0;
+}
+
+// ─── SEND CUSTOM EMBED ────────────────────────────────────────────────────
 async function sendCustomEmbed() {
-  const channelId = document.getElementById('editor-channel').value;
-  if (!channelId) { toast('⚠️ Selecciona un canal', 'error'); return; }
+  const channelId = $('editor-channel')?.value;
+  if (!channelId) { toast('⚠️ Selecciona un canal destino', 'warn'); return; }
+  if (!runValidations(0)) { toast('❌ Corrige los errores de validación primero', 'error'); return; }
+
+  const btn = $('btn-send-custom');
+  btn.disabled = true; btn.textContent = '⏳ Enviando...';
 
   const embedData = {
-    authorEmoji: document.getElementById('editor-author-emoji').value,
-    authorName:  document.getElementById('editor-author-name').value,
-    title:       document.getElementById('editor-title').value,
-    description: document.getElementById('editor-desc').value,
-    image:       document.getElementById('editor-image').value,
-    thumbnail:   document.getElementById('editor-thumb')?.value || '',
-    footer:      document.getElementById('editor-footer').value,
-    footerIcon:  document.getElementById('editor-footer-icon')?.value || '',
-    tag:         document.getElementById('editor-tag').value,
-    tagEmoji:    editorEmoji,
-    color:       editorColor,
+    authorEmoji: $('editor-author-emoji')?.value || '',
+    authorName:  $('editor-author-name')?.value  || '',
+    authorUrl:   $('editor-author-url')?.value   || '',
+    authorIcon:  $('editor-author-icon')?.value  || '',
+    title:       $('editor-title')?.value         || '',
+    titleUrl:    $('editor-title-url')?.value     || '',
+    description: $('editor-desc')?.value          || '',
+    image:       $('editor-image')?.value         || '',
+    thumbnail:   $('editor-thumb')?.value         || '',
+    footer:      $('editor-footer')?.value        || '',
+    footerIcon:  $('editor-footer-icon')?.value   || '',
+    tag:         $('editor-tag')?.value           || '',
+    tagEmoji:    $('editor-btn-emoji')?.value     || '',
+    tagStyle:    $('editor-btn-style')?.value     || 'Primary',
+    btnType:     $('editor-btn-type')?.value      || 'none',
+    fields:      state.fields,
+    color:       state.color,
   };
 
-  const data = await api('/api/send-custom-embed', 'POST', { channelId, embedData });
-  if (data?.success) toast('✅ ' + data.message, 'success');
-  else toast('❌ ' + (data?.error || 'Error'), 'error');
+  const d = await api('/api/send-custom-embed', 'POST', { channelId, embedData });
+  btn.disabled = false; btn.textContent = '📨 Enviar Embed';
+  d?.success ? toast('✅ ' + d.message, 'success') : toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
-// ── USERS ─────────────────────────────────────────────────────────
+// ─── DRAFTS ───────────────────────────────────────────────────────────────
+let draftAutoTimer = null;
+function autoSaveDraft() {
+  clearTimeout(draftAutoTimer);
+  const status = $('draft-status');
+  if (status) { status.textContent = '⏳ Guardando...'; status.className = 'draft-status draft-saving'; }
+  draftAutoTimer = setTimeout(() => {
+    saveDraft(true);
+    if (status) { status.textContent = '✅ Guardado automáticamente'; status.className = 'draft-status'; }
+  }, 1500);
+}
+
+function saveDraft(auto = false) {
+  const name = auto ? `Borrador ${new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})}` : prompt('Nombre del borrador:') || 'Borrador';
+  const draft = {
+    id:    Date.now(),
+    name,
+    time:  new Date().toISOString(),
+    data: {
+      authorEmoji: $('editor-author-emoji')?.value,
+      authorName:  $('editor-author-name')?.value,
+      title:       $('editor-title')?.value,
+      desc:        $('editor-desc')?.value,
+      image:       $('editor-image')?.value,
+      thumb:       $('editor-thumb')?.value,
+      footer:      $('editor-footer')?.value,
+      footerIcon:  $('editor-footer-icon')?.value,
+      btnType:     $('editor-btn-type')?.value,
+      btnEmoji:    $('editor-btn-emoji')?.value,
+      btnText:     $('editor-tag')?.value,
+      btnStyle:    $('editor-btn-style')?.value,
+      fields:      JSON.parse(JSON.stringify(state.fields)),
+      color:       state.color,
+    }
+  };
+  // Keep only last 5 auto or 10 manual
+  state.drafts = state.drafts.filter(d => auto ? !d.name.startsWith('Borrador ') : true).slice(0, 9);
+  state.drafts.unshift(draft);
+  localStorage.setItem('hs_drafts', JSON.stringify(state.drafts));
+  renderDraftBar();
+  if (!auto) toast('💾 Borrador guardado', 'success');
+}
+
+function loadDraft(id) {
+  const draft = state.drafts.find(d => d.id === id);
+  if (!draft) return;
+  const d = draft.data;
+  setVal('editor-author-emoji', d.authorEmoji || '');
+  setVal('editor-author-name',  d.authorName  || '');
+  setVal('editor-title',        d.title       || '');
+  setVal('editor-desc',         d.desc        || '');
+  setVal('editor-image',        d.image       || '');
+  setVal('editor-thumb',        d.thumb       || '');
+  setVal('editor-footer',       d.footer      || '');
+  setVal('editor-footer-icon',  d.footerIcon  || '');
+  setVal('editor-btn-type',     d.btnType     || 'none');
+  setVal('editor-btn-emoji',    d.btnEmoji    || '');
+  setVal('editor-tag',          d.btnText     || '');
+  setVal('editor-btn-style',    d.btnStyle    || 'Primary');
+  $('btn-options').style.display = d.btnType === 'button' ? 'block' : 'none';
+  state.fields = d.fields || [];
+  renderFields();
+  pickColorRaw(d.color || '#6366f1');
+  updatePreview();
+  toast(`📋 Borrador "${draft.name}" cargado`, 'info');
+}
+
+function deleteDraft(id) {
+  state.drafts = state.drafts.filter(d => d.id !== id);
+  localStorage.setItem('hs_drafts', JSON.stringify(state.drafts));
+  renderDraftBar();
+}
+
+function renderDraftBar() {
+  const bar = $('drafts-bar'), list = $('draft-list');
+  if (!bar || !list) return;
+  if (!state.drafts.length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  $('draft-status').textContent = `💾 ${state.drafts.length} borrador${state.drafts.length>1?'es':''}:`;
+  list.innerHTML = state.drafts.slice(0,5).map(d => `
+    <span class="draft-chip" onclick="loadDraft(${d.id})">
+      ${d.name}
+      <span class="del" onclick="event.stopPropagation();deleteDraft(${d.id})">✕</span>
+    </span>`).join('');
+}
+
+// ─── CHARACTER COUNTERS ───────────────────────────────────────────────────
+function countChars(inputId, countId, max) {
+  const len = ($(inputId)?.value || '').length;
+  const el = $(countId);
+  if (!el) return;
+  el.textContent = `${len}/${max}`;
+  el.className = 'input-count' + (len > max ? ' over' : len > max * .85 ? ' warn' : '');
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────
 async function loadUsers() {
   const users = await api('/api/users');
   if (!users) return;
-  const tbody = document.getElementById('users-tbody');
+  const tbody = $('users-tbody');
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-3)">Sin usuarios</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--t3)">Sin usuarios</td></tr>';
     return;
   }
   tbody.innerHTML = users.map(u => `
     <tr>
-      <td><strong>${u.username}</strong></td>
-      <td><span class="badge badge-${u.role}">${u.role}</span></td>
-      <td class="text-sm text-muted">${(u.role === 'admin' ? ['Todo'] : (u.role === 'staff' ? ['Embeds','Tickets','Logs'] : ['Vista'])).join(', ')}</td>
-      <td class="text-sm text-muted">${new Date(u.createdAt).toLocaleDateString('es')}</td>
-      <td>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteUser(${u.id},'${u.username}')" title="Eliminar">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
+      <td><strong>${escHtml(u.username)}</strong></td>
+      <td><span class="badge b-${u.role}">${u.role}</span></td>
+      <td class="t-sm t-muted">${u.role==='admin'?'Todo':u.role==='staff'?'Embeds, Tickets, Logs':'Vista'}</td>
+      <td class="t-sm t-muted">${new Date(u.createdAt).toLocaleDateString('es')}</td>
+      <td><button class="btn btn-danger btn-xs btn-icon" onclick="deleteUser(${u.id},'${escHtml(u.username)}')" title="Eliminar">🗑️</button></td>
+    </tr>`).join('');
 }
 
 async function createUser() {
-  const username = document.getElementById('new-username').value.trim();
-  const password = document.getElementById('new-password').value;
-  const role     = document.getElementById('new-role').value;
-  if (!username || !password) { toast('⚠️ Completa todos los campos', 'error'); return; }
-
-  const data = await api('/api/users', 'POST', { username, password, role });
-  if (data?.success) {
+  const username = $('new-username')?.value.trim();
+  const password = $('new-password')?.value;
+  const role     = $('new-role')?.value;
+  if (!username || !password) { toast('⚠️ Completa todos los campos', 'warn'); return; }
+  const d = await api('/api/users', 'POST', { username, password, role });
+  if (d?.success) {
     toast(`✅ Usuario "${username}" creado`, 'success');
     closeModal('modal-user');
-    document.getElementById('new-username').value = '';
-    document.getElementById('new-password').value = '';
+    setVal('new-username',''); setVal('new-password','');
     loadUsers();
-  } else toast('❌ ' + (data?.error || 'Error'), 'error');
+  } else toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
 async function deleteUser(id, name) {
   if (!confirm(`¿Eliminar el usuario "${name}"?`)) return;
-  const data = await api(`/api/users/${id}`, 'DELETE');
-  if (data?.success) { toast(`🗑️ Usuario eliminado`, 'info'); loadUsers(); }
-  else toast('❌ ' + (data?.error || 'Error'), 'error');
+  const d = await api(`/api/users/${id}`, 'DELETE');
+  d?.success ? (toast('🗑️ Usuario eliminado', 'info'), loadUsers()) : toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
-// ── SECURITY ──────────────────────────────────────────────────────
+// ─── SECURITY ─────────────────────────────────────────────────────────────
 async function loadSecurity() {
   const cfg = await api('/api/security');
   if (!cfg) return;
-
-  document.getElementById('spam-enabled').checked = cfg.antiSpam?.enabled || false;
-  document.getElementById('spam-max').value        = cfg.antiSpam?.maxMessages || 5;
-  document.getElementById('spam-window').value     = cfg.antiSpam?.timeWindow  || 5000;
-  document.getElementById('spam-action').value     = cfg.antiSpam?.action      || 'mute';
-
-  document.getElementById('raid-enabled').checked = cfg.antiRaid?.enabled || false;
-  document.getElementById('raid-max').value        = cfg.antiRaid?.maxJoins   || 10;
-  document.getElementById('raid-window').value     = cfg.antiRaid?.timeWindow || 10000;
-  document.getElementById('raid-action').value     = cfg.antiRaid?.action     || 'kick';
-
+  setChecked('spam-enabled', cfg.antiSpam?.enabled || false);
+  setVal('spam-max',    cfg.antiSpam?.maxMessages || '5');
+  setVal('spam-window', cfg.antiSpam?.timeWindow  || '5000');
+  setVal('spam-action', cfg.antiSpam?.action      || 'mute');
+  setChecked('raid-enabled', cfg.antiRaid?.enabled || false);
+  setVal('raid-max',    cfg.antiRaid?.maxJoins   || '10');
+  setVal('raid-window', cfg.antiRaid?.timeWindow || '10000');
+  setVal('raid-action', cfg.antiRaid?.action     || 'kick');
   renderWordTags(cfg.bannedWords || []);
-
-  if (cfg.logChannelId) {
-    document.getElementById('log-channel-select').value = cfg.logChannelId;
-  }
+  if (cfg.logChannelId) setVal('log-channel-select', cfg.logChannelId);
 }
 
 function renderWordTags(words) {
-  const container = document.getElementById('word-tags');
-  if (!words.length) {
-    container.innerHTML = '<span class="text-muted text-sm">Sin palabras configuradas</span>';
-    return;
-  }
-  container.innerHTML = words.map(w => `
-    <span class="word-tag">${w}<button onclick="removeBannedWord('${w}')">✕</button></span>
-  `).join('');
+  const c = $('word-tags');
+  if (!c) return;
+  c.innerHTML = words.length
+    ? words.map(w => `<span class="word-tag">${escHtml(w)}<button class="rm" onclick="removeBannedWord('${escHtml(w)}')">✕</button></span>`).join('')
+    : '<span class="t-muted t-sm">Sin palabras configuradas</span>';
 }
 
 async function addBannedWord() {
-  const word = document.getElementById('new-word-input').value.trim().toLowerCase();
+  const word = $('new-word-input')?.value.trim().toLowerCase();
   if (!word) return;
   const cfg = await api('/api/security');
-  const words = cfg.bannedWords || [];
+  const words = cfg?.bannedWords || [];
   if (!words.includes(word)) words.push(word);
-  cfg.bannedWords = words;
-  await api('/api/security', 'POST', cfg);
-  document.getElementById('new-word-input').value = '';
+  await api('/api/security', 'POST', {...cfg, bannedWords: words});
+  setVal('new-word-input','');
   renderWordTags(words);
-  toast(`✅ Palabra "${word}" añadida al filtro`, 'success');
+  toast(`✅ Palabra "${word}" añadida`, 'success');
 }
 
 async function removeBannedWord(word) {
   const cfg = await api('/api/security');
-  cfg.bannedWords = (cfg.bannedWords || []).filter(w => w !== word);
-  await api('/api/security', 'POST', cfg);
-  renderWordTags(cfg.bannedWords);
-  toast(`🗑️ Palabra "${word}" eliminada`, 'info');
+  const words = (cfg?.bannedWords||[]).filter(w=>w!==word);
+  await api('/api/security','POST',{...cfg,bannedWords:words});
+  renderWordTags(words);
+  toast(`🗑️ Palabra eliminada`, 'info');
 }
 
 async function saveSecurityConfig() {
   const cfg = {
     antiSpam: {
-      enabled:     document.getElementById('spam-enabled').checked,
-      maxMessages: parseInt(document.getElementById('spam-max').value),
-      timeWindow:  parseInt(document.getElementById('spam-window').value),
-      action:      document.getElementById('spam-action').value,
+      enabled:     $('spam-enabled')?.checked || false,
+      maxMessages: parseInt($('spam-max')?.value) || 5,
+      timeWindow:  parseInt($('spam-window')?.value) || 5000,
+      action:      $('spam-action')?.value || 'mute',
     },
     antiRaid: {
-      enabled:    document.getElementById('raid-enabled').checked,
-      maxJoins:   parseInt(document.getElementById('raid-max').value),
-      timeWindow: parseInt(document.getElementById('raid-window').value),
-      action:     document.getElementById('raid-action').value,
+      enabled:    $('raid-enabled')?.checked || false,
+      maxJoins:   parseInt($('raid-max')?.value) || 10,
+      timeWindow: parseInt($('raid-window')?.value) || 10000,
+      action:     $('raid-action')?.value || 'kick',
     },
     bannedWords:     (await api('/api/security'))?.bannedWords || [],
     bannedWordAction:'delete',
-    logChannelId:    document.getElementById('log-channel-select').value,
+    logChannelId:    $('log-channel-select')?.value || '',
   };
-  const data = await api('/api/security', 'POST', cfg);
-  if (data?.success) toast('✅ Configuración guardada', 'success');
+  const d = await api('/api/security','POST',cfg);
+  if (d?.success) toast('✅ Configuración guardada', 'success');
 }
 
-// ── LOGS ──────────────────────────────────────────────────────────
+// ─── LOGS ─────────────────────────────────────────────────────────────────
 async function loadLogs() {
-  const type = document.getElementById('log-filter')?.value || '';
-  const url  = `/api/logs?limit=100${type ? '&type=' + type : ''}`;
+  const type = $('log-filter')?.value || '';
+  const url  = `/api/logs?limit=100${type?'&type='+type:''}`;
   const logs = await api(url);
-  const container = document.getElementById('logs-feed');
-
-  if (!logs?.length) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Sin logs registrados</p></div>';
-    return;
-  }
-  container.innerHTML = '<div class="log-feed">' + logs.map(renderLogItem).join('') + '</div>';
+  const c = $('logs-feed');
+  if (!c) return;
+  c.innerHTML = logs?.length
+    ? '<div class="log-feed">' + logs.map(renderLogItem).join('') + '</div>'
+    : '<div class="empty-state"><div class="empty-ico">📋</div><p>Sin logs registrados</p></div>';
 }
 
 function renderLogItem(log) {
-  const time = new Date(log.timestamp).toLocaleString('es', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const t = new Date(log.timestamp).toLocaleString('es',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   return `
     <div class="log-entry">
-      <span class="log-emoji">${log.icon || '📋'}</span>
-      <div class="log-content">
-        <div class="log-text">${log.description}</div>
-        <div class="log-time">${time}</div>
+      <span class="log-ico">${log.icon||'📋'}</span>
+      <div class="log-body">
+        <div class="log-text">${escHtml(log.description)}</div>
+        <div class="log-time">${t}</div>
       </div>
       <span class="log-chip">${log.type.replace(/_/g,' ')}</span>
-    </div>
-  `;
+    </div>`;
 }
 
 async function clearLogsAction() {
-  if (!confirm('¿Limpiar todos los logs?')) return;
-  const data = await api('/api/logs', 'DELETE');
-  if (data?.success) { toast('🗑️ Logs limpiados', 'info'); loadLogs(); }
+  if (!confirm('¿Limpiar todos los logs de auditoría?')) return;
+  const d = await api('/api/logs','DELETE');
+  d?.success ? (toast('🗑️ Logs limpiados','info'), loadLogs()) : toast('❌ Error','error');
 }
 
-// ── MODAL ─────────────────────────────────────────────────────────
-function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
-function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+// ─── MODAL ────────────────────────────────────────────────────────────────
+function openModal(id)  { $(id)?.classList.add('open'); }
+function closeModal(id) { $(id)?.classList.remove('open'); }
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
 });
 
-// ── TOAST ─────────────────────────────────────────────────────────
+// ─── TOAST ────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
-  const container = document.getElementById('toast-container');
+  const c = $('toast-container');
+  if (!c) return;
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(100%)'; el.style.transition = '.3s'; }, 3200);
-  setTimeout(() => el.remove(), 3600);
+  c.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toast-slide .3s var(--e-in) reverse';
+    setTimeout(() => el.remove(), 300);
+  }, 3400);
 }
 
-// ── API HELPER ────────────────────────────────────────────────────
+// ─── API ──────────────────────────────────────────────────────────────────
 async function api(url, method = 'GET', body = null) {
   try {
-    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    const opts = { method, headers: {'Content-Type':'application/json'} };
     if (body) opts.body = JSON.stringify(body);
-    const res  = await fetch(url, opts);
-    return await res.json();
-  } catch (e) {
-    console.error('API error:', e);
-    return null;
-  }
+    const r = await fetch(url, opts);
+    return await r.json();
+  } catch(e) { console.error('[API]', e); return null; }
 }
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const qsa = sel => document.querySelectorAll(sel);
+const show = id => $(id)?.classList.remove('hidden');
+const hide = id => $(id)?.classList.add('hidden');
+const setVal = (id, v) => { const el = $(id); if (el) el.value = v; };
+const setChecked = (id, v) => { const el = $(id); if (el) el.checked = v; };
+const toggleEl = (id, show) => { const el = $(id); if (el) el.style.display = show ? '' : 'none'; };
+const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
