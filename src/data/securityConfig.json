@@ -1,0 +1,17 @@
+{
+  "antiSpam": {
+    "enabled": true,
+    "maxMessages": 5,
+    "timeWindow": 5000,
+    "action": "mute"
+  },
+  "antiRaid": {
+    "enabled": true,
+    "maxJoins": 10,
+    "timeWindow": 10000,
+    "action": "kick"
+  },
+  "bannedWords": [],
+  "bannedWordAction": "delete",
+  "logChannelId": ""
+}

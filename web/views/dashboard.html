@@ -1,220 +1,540 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HyperStock - Panel</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <title>HyperStock Panel</title>
+  <link rel="stylesheet" href="/css/style.css"/>
 </head>
-<body class="dashboard-page">
+<body>
+<div class="app">
 
-  <!-- SIDEBAR -->
+  <!-- ═══ SIDEBAR ═══════════════════════════════════════════════ -->
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-circle">⚡</div>
-      <span>HyperStock</span>
+    <div class="sidebar-brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-name">HyperStock</div>
+        <div class="brand-sub">Bot Panel v2.0</div>
+      </div>
     </div>
-    <nav class="sidebar-nav">
-      <a href="#embeds" class="nav-item active" onclick="showSection('embeds')">📨 Embeds</a>
-      <a href="#tickets" class="nav-item" onclick="showSection('tickets')">🎫 Tickets</a>
-    </nav>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">General</div>
+      <button class="nav-link active" onclick="showPage('home')" id="nav-home">
+        <span class="nav-icon">🏠</span> Inicio
+      </button>
+
+      <div class="sidebar-label">Gestión</div>
+      <button class="nav-link" onclick="showPage('embeds')" id="nav-embeds">
+        <span class="nav-icon">📨</span> Embeds
+      </button>
+      <button class="nav-link" onclick="showPage('editor')" id="nav-editor">
+        <span class="nav-icon">✏️</span> Editor de Embeds
+      </button>
+      <button class="nav-link" onclick="showPage('tickets')" id="nav-tickets">
+        <span class="nav-icon">🎫</span> Tickets
+      </button>
+
+      <div class="sidebar-label" id="admin-label" style="display:none">Administración</div>
+      <button class="nav-link" onclick="showPage('users')" id="nav-users" style="display:none">
+        <span class="nav-icon">👥</span> Usuarios
+      </button>
+      <button class="nav-link" onclick="showPage('security')" id="nav-security" style="display:none">
+        <span class="nav-icon">🛡️</span> Seguridad
+      </button>
+      <button class="nav-link" onclick="showPage('logs')" id="nav-logs" style="display:none">
+        <span class="nav-icon">📋</span> Logs <span class="nav-badge" id="log-badge" style="display:none">!</span>
+      </button>
+    </div>
+
     <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Cargando...</div>
+          <div class="user-role" id="user-role">—</div>
+        </div>
+      </div>
       <a href="/logout" class="btn-logout">🚪 Cerrar Sesión</a>
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
-    <header class="top-bar">
-      <h2 id="section-title">📨 Enviar Embeds</h2>
-      <div class="status-badge">🟢 Bot Online</div>
+  <!-- ═══ MAIN ══════════════════════════════════════════════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">🏠 Inicio</div>
+      <div class="topbar-right">
+        <div class="status-pill"><span class="status-dot"></span> Bot Online</div>
+      </div>
     </header>
 
-    <!-- SECCIÓN EMBEDS -->
-    <section id="section-embeds" class="section active">
-      <div class="channel-selector">
-        <label>📡 Selecciona el canal destino:</label>
-        <select id="channelSelect">
-          <option value="">Cargando canales...</option>
-        </select>
+    <div class="content">
+
+      <!-- ─── HOME ─────────────────────────────────────────────── -->
+      <div class="page active" id="page-home">
+        <div class="server-banner">
+          <div class="server-icon-big">🏪</div>
+          <div class="server-banner-info">
+            <h2 id="guild-name">HyperStock</h2>
+            <p id="guild-desc">Cargando información del servidor...</p>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="home-stats">
+          <div class="stat-card" style="--stat-color: var(--grad-accent); --stat-bg: var(--accent-dim)">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-members">—</div>
+              <div class="stat-label">Miembros</div>
+            </div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--purple); --stat-bg: var(--purple-dim)">
+            <div class="stat-icon">📢</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-channels">—</div>
+              <div class="stat-label">Canales</div>
+            </div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--green); --stat-bg: var(--green-dim)">
+            <div class="stat-icon">🎭</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-roles">—</div>
+              <div class="stat-label">Roles</div>
+            </div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--yellow); --stat-bg: var(--yellow-dim)">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-uptime">—</div>
+              <div class="stat-label">Uptime del Bot</div>
+            </div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--cyan); --stat-bg: var(--cyan-dim)">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-boosts">—</div>
+              <div class="stat-label">Boosts</div>
+            </div>
+          </div>
+          <div class="stat-card" style="--stat-color: var(--pink); --stat-bg: var(--pink-dim)">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-ping">—</div>
+              <div class="stat-label">Ping del Bot</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="flex-between mb-16">
+              <strong>📊 Actividad Reciente</strong>
+            </div>
+            <div id="home-logs" class="log-list">
+              <div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad reciente</p></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="flex-between mb-16">
+              <strong>ℹ️ Información del Servidor</strong>
+            </div>
+            <div id="guild-info-list" style="font-size:13.5px; line-height:2; color: var(--text-2)">
+              Cargando...
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="embeds-grid">
-
-        <!-- EMBED 1: TICKETS -->
-        <div class="embed-card">
-          <div class="embed-preview discord-embed">
-            <div class="embed-accent blue"></div>
-            <div class="embed-content">
-              <div class="embed-author">
-                <div class="author-icon">🏪</div>
-                <strong>Hyper Stock</strong>
-              </div>
-              <div class="embed-title">Bienvenido al sistema de tickets de Hyper Stock</div>
-              <div class="embed-desc">
-                Abre un ticket para comprar productos, recibir soporte o resolver dudas.<br/><br/>
-                <strong>Antes de abrir un ticket:</strong><br/>
-                • Selecciona la categoría adecuada.<br/>
-                • Explica tu solicitud con claridad.<br/>
-                • Espera a que un miembro del staff te atienda.<br/><br/>
-                <strong>Importante:</strong> Hyper Stock no se hace responsable de problemas o acuerdos realizados fuera de nuestro equipo oficial.
-              </div>
-              <div class="embed-footer-tag">Selecciona una opción ▾</div>
-            </div>
-          </div>
-          <div class="embed-actions">
-            <span class="embed-label">🎫 Sistema de Tickets</span>
-            <button class="btn-send" onclick="sendEmbed('tickets')">Enviar al Canal</button>
-          </div>
+      <!-- ─── EMBEDS ────────────────────────────────────────────── -->
+      <div class="page" id="page-embeds">
+        <div class="section-header">
+          <h2>📨 Enviar Embeds</h2>
+          <p>Envía los embeds predefinidos de HyperStock a cualquier canal del servidor</p>
         </div>
 
-        <!-- EMBED 2: MÉTODOS DE PAGO -->
-        <div class="embed-card">
-          <div class="embed-preview discord-embed">
-            <div class="embed-accent blue"></div>
-            <div class="embed-content">
-              <div class="embed-author">
-                <div class="author-icon">🏪</div>
-                <strong>HyperStock Metodos</strong>
-              </div>
-              <div class="embed-title">MÉTODOS DE PAGO</div>
-              <div class="embed-desc">
-                Binance 🪙 • PayPal 💙<br/>
-                Yape 🇵🇪<br/>
-                Yape 🇵🇪<br/>
-                Mercado Pago 🛒<br/>
-                🇲🇽 🇦🇷 🇨🇱<br/>
-                Nequi 🇨🇴<br/>
-                Litecoin 💚
-              </div>
-              <div class="embed-img-placeholder">🖼️ Imagen: Métodos de Pago</div>
-              <div class="embed-footer-tag">» Metodos</div>
-            </div>
-          </div>
-          <div class="embed-actions">
-            <span class="embed-label">💳 Métodos de Pago</span>
-            <button class="btn-send" onclick="sendEmbed('metodos')">Enviar al Canal</button>
-          </div>
+        <div class="channel-bar">
+          <label>📡 Canal destino:</label>
+          <select class="select" id="channelSelect" style="max-width:300px">
+            <option value="">Cargando canales...</option>
+          </select>
         </div>
 
-        <!-- EMBED 3: DIAMANTES -->
-        <div class="embed-card">
-          <div class="embed-preview discord-embed">
-            <div class="embed-accent blue"></div>
-            <div class="embed-content">
-              <div class="embed-author">
-                <div class="author-icon">🏪</div>
-                <strong>Hyper Stock</strong>
-              </div>
-              <div class="embed-title">Venta De Diamantes</div>
-              <div class="embed-desc">
-                🎁 <strong>Diamantes Sin Previa Verificacion De ID</strong><br/><br/>
-                🎁 No necesitamos tu cuenta, solamente tu ID<br/>
-                🎁 Recargas disponibles a precios económicos<br/>
-                🎁 Entrega rápida y segura<br/><br/>
-                💎 <strong>Precios</strong><br/>
-                💎 100 + 10 Diamantes = S/.4.5<br/>
-                💎 310 + 31 Diamantes = S/.13<br/>
-                💎 520 + 52 Diamantes = S/.18.5<br/>
-                💎 1060 + 106 Diamantes = S/.32<br/>
-                💎 2180 + 218 Diamantes = S/.53<br/>
-                💎 5600 + 560 Diamantes = S/.125
-              </div>
-              <div class="embed-img-placeholder">🖼️ Imagen: Diamantes</div>
-              <div class="embed-footer-tag">» Adquirir</div>
-            </div>
-          </div>
-          <div class="embed-actions">
-            <span class="embed-label">💎 Venta de Diamantes</span>
-            <button class="btn-send" onclick="sendEmbed('diamantes')">Enviar al Canal</button>
-          </div>
+        <div class="embeds-grid" id="embeds-grid">
+          <!-- generado por JS -->
         </div>
-
-        <!-- EMBED 4: DECORACIONES -->
-        <div class="embed-card">
-          <div class="embed-preview discord-embed">
-            <div class="embed-accent blue"></div>
-            <div class="embed-content">
-              <div class="embed-author">
-                <div class="author-icon">🏪</div>
-                <strong>Hyper Stock</strong>
-              </div>
-              <div class="embed-title">Método de Decoraciones al 60% de Descuento 🎁</div>
-              <div class="embed-desc">
-                ¿Te preguntas cómo funciona?<br/><br/>
-                » El método consiste en adquirir decoraciones de Discord mediante regalos, pagando un 60% menos de su precio habitual.<br/><br/>
-                <strong>¿Qué incluye?</strong><br/>
-                » El método completo para que puedas realizar el proceso por tu cuenta.<br/><br/>
-                » <strong>Precio del método completo: $20 USD</strong><br/><br/>
-                ¿Qué esperas para conseguir tus decoraciones a un precio más económico?<br/><br/>
-                ✅ <strong>Adquiere el método completo y descubre cómo funciona.</strong>
-              </div>
-              <div class="embed-img-placeholder">🖼️ Imagen: Decoraciones Discord</div>
-              <div class="embed-footer-tag">» Decoraciones</div>
-            </div>
-          </div>
-          <div class="embed-actions">
-            <span class="embed-label">🎨 Decoraciones Discord</span>
-            <button class="btn-send" onclick="sendEmbed('decoraciones')">Enviar al Canal</button>
-          </div>
-        </div>
-
-        <!-- EMBED 5: BOOSTS -->
-        <div class="embed-card">
-          <div class="embed-preview discord-embed">
-            <div class="embed-accent purple"></div>
-            <div class="embed-content">
-              <div class="embed-author">
-                <div class="author-icon">🏪</div>
-                <strong>Hyper Stock</strong>
-              </div>
-              <div class="embed-desc">
-                ¿Cansado de pagar precios exagerados por los boosts de Discord? 🔨<br/><br/>
-                ¡Tengo la solución! 🎁<br/><br/>
-                Vendo mi <strong>método para conseguir boosts de Discord a precios económicos.</strong><br/><br/>
-                » <strong>Precio del método: $20 💚</strong><br/>
-                » <strong>Precios Vendemos:</strong><br/><br/>
-                ⚡ <strong>Discord Boosts</strong><br/>
-                · 14 Boosts — 1 mes<br/>
-                · Precio: <strong>$1.75</strong><br/><br/>
-                » <strong>¿Quieres comprar boosts directamente?</strong><br/><br/>
-                Abre un ticket indicando la cantidad de boosts que necesitas y la duración. Nuestro staff te informará del precio.<br/><br/>
-                🔥 <strong>¡Aprovecha estos precios!</strong>
-              </div>
-              <div class="embed-bar">Objetivo de mejora &nbsp; <span class="bar-tag">30/33 De mejoras ›</span></div>
-              <div class="embed-footer-tag">» Boost</div>
-            </div>
-          </div>
-          <div class="embed-actions">
-            <span class="embed-label">⚡ Discord Boosts</span>
-            <button class="btn-send" onclick="sendEmbed('boosts')">Enviar al Canal</button>
-          </div>
-        </div>
-
-      </div><!-- fin embeds-grid -->
-    </section>
-
-    <!-- SECCIÓN TICKETS -->
-    <section id="section-tickets" class="section">
-      <div class="info-card">
-        <h3>🎫 Sistema de Tickets</h3>
-        <p>El sistema de tickets se activa enviando el embed de tickets al canal deseado. Los usuarios verán un menú desplegable con las categorías:</p>
-        <ul>
-          <li>💎 Comprar Diamantes</li>
-          <li>⚡ Comprar Boosts</li>
-          <li>🎨 Decoraciones Discord</li>
-          <li>💳 Métodos de Pago</li>
-          <li>🛠️ Soporte General</li>
-        </ul>
-        <p>Al seleccionar una opción, el bot crea automáticamente un canal privado de ticket.</p>
       </div>
-    </section>
 
-  </main>
+      <!-- ─── EDITOR DE EMBEDS ──────────────────────────────────── -->
+      <div class="page" id="page-editor">
+        <div class="section-header">
+          <h2>✏️ Editor de Embeds</h2>
+          <p>Personaliza cualquier embed y envíalo al canal que quieras</p>
+        </div>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="toast"></div>
+        <div class="editor-layout">
+          <!-- Formulario -->
+          <div class="card">
+            <div class="form-row">
+              <label class="input-label">📋 Plantilla base</label>
+              <select class="select" id="editor-template" onchange="loadTemplate()">
+                <option value="">— Embed en blanco —</option>
+                <option value="tickets">🎫 Sistema de Tickets</option>
+                <option value="metodos">💳 Métodos de Pago</option>
+                <option value="diamantes">💎 Venta de Diamantes</option>
+                <option value="decoraciones">🎨 Decoraciones Discord</option>
+                <option value="boosts">⚡ Discord Boosts</option>
+              </select>
+            </div>
 
-  <script src="/js/dashboard.js"></script>
+            <div class="form-row-2">
+              <div>
+                <label class="input-label">Emoji del autor</label>
+                <input class="input" id="editor-author-emoji" placeholder="🏪" oninput="updatePreview()"/>
+              </div>
+              <div>
+                <label class="input-label">Nombre del autor</label>
+                <input class="input" id="editor-author-name" placeholder="Hyper Stock" oninput="updatePreview()"/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="input-label">Título</label>
+              <input class="input" id="editor-title" placeholder="Título del embed" oninput="updatePreview()"/>
+            </div>
+
+            <div class="form-row">
+              <label class="input-label">Descripción</label>
+              <textarea class="textarea" id="editor-desc" placeholder="Contenido del embed..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div>
+                <label class="input-label">URL de Imagen</label>
+                <input class="input" id="editor-image" placeholder="https://..." oninput="updatePreview()"/>
+              </div>
+              <div>
+                <label class="input-label">URL de Thumbnail</label>
+                <input class="input" id="editor-thumb" placeholder="https://..." oninput="updatePreview()"/>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div>
+                <label class="input-label">Footer</label>
+                <input class="input" id="editor-footer" placeholder="Texto del footer" oninput="updatePreview()"/>
+              </div>
+              <div>
+                <label class="input-label">URL del ícono footer</label>
+                <input class="input" id="editor-footer-icon" placeholder="https://..." oninput="updatePreview()"/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="input-label">Color</label>
+              <div class="color-swatches">
+                <div class="swatch active" style="background:#5865f2" data-color="#5865f2" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#8b5cf6" data-color="#8b5cf6" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#ec4899" data-color="#ec4899" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#10b981" data-color="#10b981" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#ef4444" data-color="#ef4444" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#06b6d4" data-color="#06b6d4" onclick="pickColor(this)"></div>
+                <div class="swatch" style="background:#ffffff" data-color="#ffffff" onclick="pickColor(this)"></div>
+                <input type="color" id="editor-color-picker" value="#5865f2"
+                  style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px;"
+                  oninput="pickColorRaw(this.value)"/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label class="input-label">Botón / Tag</label>
+              <div class="emoji-picker-row" id="emoji-picker">
+                <button class="emoji-btn selected" data-emoji="none" onclick="pickEmoji(this)">—</button>
+                <button class="emoji-btn" data-emoji="💎" onclick="pickEmoji(this)">💎</button>
+                <button class="emoji-btn" data-emoji="⚡" onclick="pickEmoji(this)">⚡</button>
+                <button class="emoji-btn" data-emoji="🎨" onclick="pickEmoji(this)">🎨</button>
+                <button class="emoji-btn" data-emoji="💳" onclick="pickEmoji(this)">💳</button>
+                <button class="emoji-btn" data-emoji="🎫" onclick="pickEmoji(this)">🎫</button>
+                <button class="emoji-btn" data-emoji="🛠️" onclick="pickEmoji(this)">🛠️</button>
+                <button class="emoji-btn" data-emoji="🎁" onclick="pickEmoji(this)">🎁</button>
+                <button class="emoji-btn" data-emoji="🔥" onclick="pickEmoji(this)">🔥</button>
+              </div>
+              <input class="input mt-8" id="editor-tag" placeholder="» Texto del tag / botón" oninput="updatePreview()"/>
+            </div>
+
+            <div class="divider"></div>
+            <div class="flex-between">
+              <select class="select" id="editor-channel" style="max-width:240px">
+                <option value="">Selecciona canal...</option>
+              </select>
+              <button class="btn btn-accent" onclick="sendCustomEmbed()">📨 Enviar Embed</button>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div>
+            <div class="card">
+              <div class="flex-between mb-16">
+                <strong style="font-size:14px">👁️ Preview en tiempo real</strong>
+                <span class="badge badge-staff">Discord</span>
+              </div>
+              <div class="embed-preview" id="editor-preview">
+                <div class="embed-inner">
+                  <div class="embed-stripe" id="prev-stripe" style="background:#5865f2"></div>
+                  <div class="embed-body">
+                    <div class="embed-author-row">
+                      <span class="embed-author-icon" id="prev-author-emoji">🏪</span>
+                      <span class="embed-author-name" id="prev-author-name">Hyper Stock</span>
+                    </div>
+                    <div class="embed-title-text" id="prev-title" style="display:none"></div>
+                    <div class="embed-desc-text" id="prev-desc">El contenido del embed aparecerá aquí...</div>
+                    <div class="embed-image-row" id="prev-image-wrap" style="display:none">
+                      <img id="prev-image" src="" alt="imagen"/>
+                    </div>
+                    <div class="embed-footer-row" id="prev-footer-row" style="display:none">
+                      <span id="prev-footer-icon"></span>
+                      <span id="prev-footer-text"></span>
+                    </div>
+                    <div class="embed-tag" id="prev-tag" style="display:none"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── TICKETS ───────────────────────────────────────────── -->
+      <div class="page" id="page-tickets">
+        <div class="section-header">
+          <h2>🎫 Sistema de Tickets</h2>
+          <p>Gestión del sistema de soporte por tickets</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="flex-between mb-16">
+              <strong>Cómo funciona</strong>
+            </div>
+            <p class="text-muted text-sm" style="line-height:1.8">
+              El sistema de tickets se activa enviando el embed de <strong>Sistema de Tickets</strong> al canal deseado desde la sección Embeds.<br/><br/>
+              Los usuarios verán un menú desplegable con las categorías disponibles. Al seleccionar una, el bot crea automáticamente un canal privado.
+            </p>
+            <div class="divider"></div>
+            <strong style="font-size:13px">Categorías activas:</strong>
+            <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+              <div class="flex-gap"><span>💎</span> <span class="text-sm">Comprar Diamantes</span></div>
+              <div class="flex-gap"><span>⚡</span> <span class="text-sm">Comprar Boosts</span></div>
+              <div class="flex-gap"><span>🎨</span> <span class="text-sm">Decoraciones Discord</span></div>
+              <div class="flex-gap"><span>💳</span> <span class="text-sm">Métodos de Pago</span></div>
+              <div class="flex-gap"><span>🛠️</span> <span class="text-sm">Soporte General</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <strong style="font-size:14px">⚙️ Configuración rápida</strong>
+            <div class="divider"></div>
+            <div class="form-row">
+              <label class="input-label">Canal para enviar tickets</label>
+              <select class="select" id="ticket-channel">
+                <option value="">Selecciona canal...</option>
+              </select>
+            </div>
+            <button class="btn btn-accent w-full mt-8" onclick="deployTicketEmbed()">
+              🚀 Desplegar Sistema de Tickets
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── USUARIOS ──────────────────────────────────────────── -->
+      <div class="page" id="page-users">
+        <div class="section-header flex-between">
+          <div>
+            <h2>👥 Usuarios del Panel</h2>
+            <p>Gestiona quién puede acceder al panel y qué puede hacer</p>
+          </div>
+          <button class="btn btn-accent" onclick="openModal('modal-user')">+ Nuevo Usuario</button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Permisos</th>
+                  <th>Creado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-3)">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SEGURIDAD ─────────────────────────────────────────── -->
+      <div class="page" id="page-security">
+        <div class="section-header">
+          <h2>🛡️ Seguridad del Servidor</h2>
+          <p>Protege tu servidor de spam, raids y contenido no deseado</p>
+        </div>
+
+        <div class="grid-2">
+          <!-- Anti-Spam -->
+          <div class="card security-card">
+            <div class="card-title">🚫 Anti-Spam</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <h4>Activar Anti-Spam</h4>
+                <p>Detecta y actúa contra usuarios que envían mensajes masivos</p>
+              </div>
+              <label class="toggle"><input type="checkbox" id="spam-enabled" onchange="saveSecurityConfig()"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="form-row-2 mt-8">
+              <div>
+                <label class="input-label">Máx. mensajes</label>
+                <input class="input" type="number" id="spam-max" value="5" min="2" max="20" oninput="saveSecurityConfig()"/>
+              </div>
+              <div>
+                <label class="input-label">Ventana (ms)</label>
+                <input class="input" type="number" id="spam-window" value="5000" min="1000" oninput="saveSecurityConfig()"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="input-label">Acción</label>
+              <select class="select" id="spam-action" onchange="saveSecurityConfig()">
+                <option value="mute">Silenciar (5 min)</option>
+                <option value="kick">Expulsar</option>
+                <option value="ban">Banear</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Anti-Raid -->
+          <div class="card security-card">
+            <div class="card-title">⚠️ Anti-Raid</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <h4>Activar Anti-Raid</h4>
+                <p>Detecta entradas masivas al servidor y actúa automáticamente</p>
+              </div>
+              <label class="toggle"><input type="checkbox" id="raid-enabled" onchange="saveSecurityConfig()"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="form-row-2 mt-8">
+              <div>
+                <label class="input-label">Máx. joins</label>
+                <input class="input" type="number" id="raid-max" value="10" min="3" max="50" oninput="saveSecurityConfig()"/>
+              </div>
+              <div>
+                <label class="input-label">Ventana (ms)</label>
+                <input class="input" type="number" id="raid-window" value="10000" min="1000" oninput="saveSecurityConfig()"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="input-label">Acción</label>
+              <select class="select" id="raid-action" onchange="saveSecurityConfig()">
+                <option value="kick">Expulsar</option>
+                <option value="ban">Banear</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filtro de palabras -->
+          <div class="card security-card" style="grid-column: 1 / -1">
+            <div class="card-title">🤬 Filtro de Palabras</div>
+            <p class="text-muted text-sm mb-16">Los mensajes que contengan estas palabras serán eliminados automáticamente.</p>
+            <div class="tag-list" id="word-tags">
+              <span class="text-muted text-sm">Sin palabras configuradas</span>
+            </div>
+            <div class="add-word-row mt-8">
+              <input class="input" id="new-word-input" placeholder="Agregar palabra..." onkeydown="if(event.key==='Enter')addBannedWord()"/>
+              <button class="btn btn-danger" onclick="addBannedWord()">+ Agregar</button>
+            </div>
+          </div>
+
+          <!-- Canal de logs -->
+          <div class="card">
+            <div class="card-title">📋 Canal de Logs de Seguridad</div>
+            <p class="text-muted text-sm mb-16">El bot enviará alertas de seguridad a este canal.</p>
+            <select class="select" id="log-channel-select" onchange="saveSecurityConfig()">
+              <option value="">Sin canal configurado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── LOGS ───────────────────────────────────────────────── -->
+      <div class="page" id="page-logs">
+        <div class="section-header flex-between">
+          <div>
+            <h2>📋 Logs de Auditoría</h2>
+            <p>Historial de eventos del servidor y del panel en tiempo real</p>
+          </div>
+          <div class="flex-gap">
+            <select class="select btn-sm" id="log-filter" onchange="loadLogs()" style="width:160px">
+              <option value="">Todos los eventos</option>
+              <option value="member_join">Joins</option>
+              <option value="member_leave">Salidas</option>
+              <option value="member_ban">Bans</option>
+              <option value="message_delete">Mensajes eliminados</option>
+              <option value="spam_detected">Spam</option>
+              <option value="raid_detected">Raid</option>
+              <option value="embed_sent">Embeds enviados</option>
+              <option value="web_login">Logins web</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="loadLogs()">🔄 Actualizar</button>
+            <button class="btn btn-danger btn-sm" onclick="clearLogsAction()">🗑️ Limpiar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="log-list" id="logs-container">
+            <div class="empty-state"><div class="empty-icon">📋</div><p>Sin logs registrados</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ─── MODAL: NUEVO USUARIO ────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👤 Nuevo Usuario</h3>
+      <button class="modal-close" onclick="closeModal('modal-user')">✕</button>
+    </div>
+    <div class="form-row">
+      <label class="input-label">Usuario</label>
+      <input class="input" id="new-username" placeholder="nombre de usuario"/>
+    </div>
+    <div class="form-row">
+      <label class="input-label">Contraseña</label>
+      <input class="input" type="password" id="new-password" placeholder="contraseña"/>
+    </div>
+    <div class="form-row">
+      <label class="input-label">Rol</label>
+      <select class="select" id="new-role">
+        <option value="staff">Staff — puede enviar embeds y ver logs</option>
+        <option value="viewer">Viewer — solo lectura</option>
+        <option value="admin">Admin — acceso total</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-user')">Cancelar</button>
+      <button class="btn btn-accent" onclick="createUser()">Crear Usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOAST CONTAINER ─────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<script src="/js/dashboard.js"></script>
 </body>
 </html>

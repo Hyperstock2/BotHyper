@@ -1,43 +1,45 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HyperStock - Login</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <title>HyperStock — Login</title>
+  <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body class="login-page">
-  <div class="login-container">
-    <div class="login-logo">
-      <div class="logo-circle">⚡</div>
-      <h1>HyperStock</h1>
-      <p>Panel de Control</p>
-    </div>
-
-    <div id="error-msg" class="error-banner" style="display:none">
-      ❌ Usuario o contraseña incorrectos
-    </div>
-
-    <form class="login-form" action="/login" method="POST">
-      <div class="form-group">
-        <label>Usuario</label>
-        <input type="text" name="username" placeholder="Ingresa tu usuario" required autocomplete="off"/>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo-wrap">
+          <div class="login-logo-bg">⚡</div>
+        </div>
+        <h1>HyperStock</h1>
+        <p>Panel de Control del Servidor</p>
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" name="password" placeholder="Ingresa tu contraseña" required />
-      </div>
-      <button type="submit" class="btn-login">Ingresar al Panel</button>
-    </form>
 
-    <p class="login-footer">HyperStock Bot Panel © 2024</p>
+      <div id="error-msg" class="alert-error" style="display:none">
+        ❌ Usuario o contraseña incorrectos
+      </div>
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label class="form-label">Usuario</label>
+          <input class="form-input" type="text" name="username" placeholder="Ingresa tu usuario" required autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" type="password" name="password" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn-primary">Ingresar al Panel →</button>
+      </form>
+
+      <p class="login-footer-text">HyperStock Bot Panel © 2024 · v2.0</p>
+    </div>
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('error')) {
-      document.getElementById('error-msg').style.display = 'block';
-    }
+    if (new URLSearchParams(window.location.search).get('error'))
+      document.getElementById('error-msg').style.display = 'flex';
   </script>
 </body>
 </html>

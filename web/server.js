@@ -1,91 +1,121 @@
-const express = require('express');
-const session = require('express-session');
-const path = require('path');
+require('dotenv').config();
+const express      = require('express');
+const session      = require('express-session');
+const path         = require('path');
+const userManager  = require('../src/handlers/userManager');
+const auditLogger  = require('../src/handlers/auditLogger');
+const { getConfig, saveConfig } = require('../src/handlers/discordSecurity');
+const { buildEmbed } = require('../src/embeds/embedBuilder');
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 8080;
 
-// Credenciales de login (configura en variables de entorno de Railway)
-const WEB_USER = process.env.WEB_USER || 'admin';
-const WEB_PASS = process.env.WEB_PASS || '12';
-
+// ── MIDDLEWARE ────────────────────────────────────────────────────
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'hyperstock_secret_key_2024',
+  secret: process.env.SESSION_SECRET || 'hyperstock_secret_2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 8 } // 8 horas
+  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 8 },
 }));
 
-// Middleware de autenticación
+// ── AUTH MIDDLEWARE ───────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  if (req.session && req.session.loggedIn) return next();
+  if (req.session?.loggedIn) return next();
   res.redirect('/login');
 }
 
-// ─── RUTAS ────────────────────────────────────────────────────────────────────
+function requireAdmin(req, res, next) {
+  if (req.session?.role === 'admin') return next();
+  res.status(403).json({ error: 'Acceso denegado: se requiere rol admin' });
+}
 
-// Login GET
+function requirePerm(perm) {
+  return (req, res, next) => {
+    if (userManager.hasPermission(req.session?.role, perm)) return next();
+    res.status(403).json({ error: `Sin permiso: ${perm}` });
+  };
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────
 app.get('/login', (req, res) => {
   if (req.session.loggedIn) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
-// Login POST
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === WEB_USER && password === WEB_PASS) {
+  const user = userManager.findByUsername(username);
+  if (user && user.password === password) {
     req.session.loggedIn = true;
-    req.session.user = username;
+    req.session.userId   = user.id;
+    req.session.username = user.username;
+    req.session.role     = user.role;
+    auditLogger.log('web_login', `Login exitoso: ${username}`, { username, role: user.role });
     res.redirect('/');
   } else {
+    auditLogger.log('web_login', `Login fallido: ${username}`, { username });
     res.redirect('/login?error=1');
   }
 });
 
-// Logout
 app.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/login');
 });
 
-// Panel principal (protegido)
+// ── DASHBOARD ─────────────────────────────────────────────────────
 app.get('/', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
 });
 
-// API: enviar embed a un canal via bot
-app.post('/api/send-embed', requireAuth, async (req, res) => {
+// ── API: SESSION INFO ─────────────────────────────────────────────
+app.get('/api/me', requireAuth, (req, res) => {
+  res.json({
+    username: req.session.username,
+    role: req.session.role,
+    permissions: userManager.PERMISSIONS[req.session.role] || [],
+  });
+});
+
+// ── API: GUILD STATS ──────────────────────────────────────────────
+app.get('/api/guild', requireAuth, async (req, res) => {
   try {
-    const { channelId, embedType } = req.body;
-    // El cliente de discord se inyecta desde index.js
     const client = app.get('discordClient');
-    if (!client) return res.status(500).json({ error: 'Bot no conectado' });
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID, { withCounts: true });
+    const uptimeMs = process.uptime() * 1000;
+    const h = Math.floor(uptimeMs / 3600000);
+    const m = Math.floor((uptimeMs % 3600000) / 60000);
 
-    const channel = await client.channels.fetch(channelId).catch(() => null);
-    if (!channel) return res.status(404).json({ error: 'Canal no encontrado' });
-
-    const { buildEmbed } = require('../src/embeds/embedBuilder');
-    const { embed, components } = buildEmbed(embedType);
-
-    await channel.send({ embeds: [embed], components: components || [] });
-    res.json({ success: true, message: `Embed "${embedType}" enviado correctamente` });
+    res.json({
+      name:         guild.name,
+      memberCount:  guild.memberCount,
+      channelCount: guild.channels.cache.size,
+      roleCount:    guild.roles.cache.size,
+      boostCount:   guild.premiumSubscriptionCount || 0,
+      boostTier:    guild.premiumTier,
+      ownerId:      guild.ownerId,
+      createdAt:    guild.createdAt,
+      icon:         guild.iconURL({ size: 128 }),
+      ping:         `${client.ws.ping}ms`,
+      uptime:       `${h}h ${m}m`,
+    });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// API: obtener canales del servidor
+// ── API: CHANNELS ─────────────────────────────────────────────────
 app.get('/api/channels', requireAuth, async (req, res) => {
   try {
     const client = app.get('discordClient');
-    const guild = await client.guilds.fetch(process.env.GUILD_ID);
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID);
+    await guild.channels.fetch();
     const channels = guild.channels.cache
-      .filter(c => c.type === 0) // solo text channels
+      .filter(c => c.type === 0)
+      .sort((a, b) => a.position - b.position)
       .map(c => ({ id: c.id, name: c.name }));
     res.json(channels);
   } catch (err) {
@@ -93,11 +123,148 @@ app.get('/api/channels', requireAuth, async (req, res) => {
   }
 });
 
+// ── API: SEND EMBED (predefinido) ─────────────────────────────────
+app.post('/api/send-embed', requireAuth, requirePerm('send_embeds'), async (req, res) => {
+  try {
+    const { channelId, embedType } = req.body;
+    const client  = app.get('discordClient');
+    const channel = await client.channels.fetch(channelId).catch(() => null);
+    if (!channel) return res.status(404).json({ error: 'Canal no encontrado' });
+
+    const { embed, components } = buildEmbed(embedType);
+    await channel.send({ embeds: [embed], components: components || [] });
+
+    auditLogger.log('embed_sent', `Embed "${embedType}" enviado en #${channel.name} por ${req.session.username}`, {
+      embedType, channelId, channelName: channel.name, user: req.session.username,
+    });
+
+    res.json({ success: true, message: `Embed "${embedType}" enviado en #${channel.name}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── API: SEND CUSTOM EMBED (editor) ──────────────────────────────
+app.post('/api/send-custom-embed', requireAuth, requirePerm('send_embeds'), async (req, res) => {
+  try {
+    const { channelId, embedData } = req.body;
+    const client  = app.get('discordClient');
+    const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+    const channel = await client.channels.fetch(channelId).catch(() => null);
+    if (!channel) return res.status(404).json({ error: 'Canal no encontrado' });
+
+    const embed = new EmbedBuilder().setColor(
+      parseInt(embedData.color.replace('#', ''), 16) || 0x5865F2
+    );
+
+    if (embedData.authorName) {
+      embed.setAuthor({
+        name: `${embedData.authorEmoji || ''} ${embedData.authorName}`.trim(),
+        iconURL: embedData.footerIcon || undefined,
+      });
+    }
+    if (embedData.title)       embed.setTitle(embedData.title);
+    if (embedData.description) embed.setDescription(embedData.description);
+    if (embedData.image)       embed.setImage(embedData.image);
+    if (embedData.thumbnail)   embed.setThumbnail(embedData.thumbnail);
+    if (embedData.footer) {
+      embed.setFooter({
+        text: embedData.footer,
+        iconURL: embedData.footerIcon || undefined,
+      });
+    }
+
+    const components = [];
+    if (embedData.tag && embedData.tagEmoji && embedData.tagEmoji !== 'none') {
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('ticket_soporte')
+          .setLabel(embedData.tag)
+          .setStyle(ButtonStyle.Secondary)
+          .setEmoji(embedData.tagEmoji)
+      );
+      components.push(row);
+    }
+
+    await channel.send({ embeds: [embed], components });
+
+    auditLogger.log('embed_sent', `Embed personalizado enviado en #${channel.name} por ${req.session.username}`, {
+      channelId, user: req.session.username,
+    });
+
+    res.json({ success: true, message: `Embed enviado en #${channel.name}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── API: USERS CRUD ───────────────────────────────────────────────
+app.get('/api/users', requireAuth, requireAdmin, (req, res) => {
+  const users = userManager.getAll().map(u => ({ ...u, password: undefined }));
+  res.json(users);
+});
+
+app.post('/api/users', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const user = userManager.create(req.body);
+    auditLogger.log('web_login', `Usuario creado: ${user.username} (${user.role}) por ${req.session.username}`, {});
+    res.json({ success: true, user: { ...user, password: undefined } });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put('/api/users/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const user = userManager.update(parseInt(req.params.id), req.body);
+    res.json({ success: true, user: { ...user, password: undefined } });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/users/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id);
+    if (targetId === req.session.userId) return res.status(400).json({ error: 'No puedes eliminarte a ti mismo' });
+    userManager.remove(targetId);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── API: LOGS ─────────────────────────────────────────────────────
+app.get('/api/logs', requireAuth, requirePerm('view_logs'), (req, res) => {
+  const { limit = 100, type } = req.query;
+  res.json(auditLogger.getLogs(parseInt(limit), type || null));
+});
+
+app.delete('/api/logs', requireAuth, requireAdmin, (req, res) => {
+  auditLogger.clearLogs();
+  res.json({ success: true });
+});
+
+// ── API: SECURITY CONFIG ──────────────────────────────────────────
+app.get('/api/security', requireAuth, requireAdmin, (req, res) => {
+  res.json(getConfig());
+});
+
+app.post('/api/security', requireAuth, requireAdmin, (req, res) => {
+  try {
+    saveConfig(req.body);
+    auditLogger.log('security', `Config de seguridad actualizada por ${req.session.username}`, {});
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── START ─────────────────────────────────────────────────────────
 function startWeb(discordClient) {
   app.set('discordClient', discordClient);
-  app.listen(PORT, () => {
-    console.log(`🌐 Web panel corriendo en puerto ${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`🌐 Panel web en puerto ${PORT}`));
 }
 
 module.exports = { startWeb };
