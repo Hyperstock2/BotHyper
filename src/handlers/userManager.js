@@ -23,12 +23,18 @@ const PERMISSIONS = {
     'voice_control', 'server_backup',
     'manage_settings',
   ],
+  admin: [
+    'view_home', 'view_dashboard',
+    'send_embeds', 'manage_tickets',
+    'manage_users', 'view_logs', 'manage_security',
+    'voice_control', 'server_backup',
+    'manage_settings',
+  ],
   owner: [
     'view_home', 'view_dashboard',
     'send_embeds', 'manage_tickets',
     'manage_users', 'manage_security',
     'server_backup', 'manage_settings',
-    // NO tiene view_logs ni voice_control
   ],
   staff: [
     'view_home', 'view_dashboard',

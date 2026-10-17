@@ -126,20 +126,20 @@ async function loadSession() {
   $('user-role').textContent  = d.role;
   $('user-avatar').textContent = d.username[0].toUpperCase();
 
-  const isDev   = d.role === 'developer';
+  const isDev   = d.role === 'developer' || d.role === 'admin';
   const isOwner = d.role === 'owner';
   const isStaff = d.role === 'staff';
 
-  // Secciones admin: developer y owner ven todo
+  // Admin y Developer ven todo
   if (isDev || isOwner) {
     show('admin-section'); show('nav-users'); show('nav-security');
     show('nav-backup');
   }
-  // Solo developer ve logs y control de voz
+  // Solo developer/admin ven logs y voz
   if (isDev) {
     show('nav-logs'); show('nav-voice');
   }
-  // Staff (ayudante) NO ve inicio, solo embeds y tickets
+  // Staff (ayudante) no ve inicio
   if (isStaff) {
     $('nav-home')?.classList.add('hidden');
   }
