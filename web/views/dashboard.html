@@ -7,176 +7,202 @@
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
+
+<!-- Background effects -->
+<div class="bg-noise"></div>
+<div class="orb orb-1" style="position:fixed"></div>
+<div class="orb orb-2" style="position:fixed"></div>
+
 <div class="app">
 
-  <!-- ═══ SIDEBAR ═══════════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon">⚡</div>
       <div>
         <div class="brand-name">HyperStock</div>
-        <div class="brand-sub">Bot Panel v2.0</div>
+        <div class="brand-ver">Bot Panel v2.0</div>
       </div>
     </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">General</div>
-      <button class="nav-link active" onclick="showPage('home')" id="nav-home">
+    <div class="sidebar-body">
+      <div class="nav-section-label">General</div>
+      <button class="nav-item active" id="nav-home" onclick="showPage('home')">
         <span class="nav-icon">🏠</span> Inicio
       </button>
 
-      <div class="sidebar-label">Gestión</div>
-      <button class="nav-link" onclick="showPage('embeds')" id="nav-embeds">
-        <span class="nav-icon">📨</span> Embeds
+      <div class="nav-section-label">Gestión</div>
+      <button class="nav-item" id="nav-embeds" onclick="showPage('embeds')">
+        <span class="nav-icon">📨</span> Enviar Embeds
       </button>
-      <button class="nav-link" onclick="showPage('editor')" id="nav-editor">
+      <button class="nav-item" id="nav-editor" onclick="showPage('editor')">
         <span class="nav-icon">✏️</span> Editor de Embeds
       </button>
-      <button class="nav-link" onclick="showPage('tickets')" id="nav-tickets">
+      <button class="nav-item" id="nav-tickets" onclick="showPage('tickets')">
         <span class="nav-icon">🎫</span> Tickets
       </button>
 
-      <div class="sidebar-label" id="admin-label" style="display:none">Administración</div>
-      <button class="nav-link" onclick="showPage('users')" id="nav-users" style="display:none">
+      <div class="nav-section-label" id="admin-section" style="display:none">Administración</div>
+      <button class="nav-item" id="nav-users" onclick="showPage('users')" style="display:none">
         <span class="nav-icon">👥</span> Usuarios
       </button>
-      <button class="nav-link" onclick="showPage('security')" id="nav-security" style="display:none">
+      <button class="nav-item" id="nav-security" onclick="showPage('security')" style="display:none">
         <span class="nav-icon">🛡️</span> Seguridad
       </button>
-      <button class="nav-link" onclick="showPage('logs')" id="nav-logs" style="display:none">
-        <span class="nav-icon">📋</span> Logs <span class="nav-badge" id="log-badge" style="display:none">!</span>
+      <button class="nav-item" id="nav-logs" onclick="showPage('logs')" style="display:none">
+        <span class="nav-icon">📋</span> Logs
+        <span class="nav-badge" id="log-badge" style="display:none">●</span>
       </button>
     </div>
 
     <div class="sidebar-footer">
-      <div class="user-chip">
-        <div class="user-avatar" id="user-avatar">A</div>
-        <div class="user-info">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
           <div class="user-name" id="user-name">Cargando...</div>
           <div class="user-role" id="user-role">—</div>
         </div>
       </div>
-      <a href="/logout" class="btn-logout">🚪 Cerrar Sesión</a>
+      <a href="/logout" class="btn-signout">
+        <span>→</span> Cerrar Sesión
+      </a>
     </div>
   </aside>
 
-  <!-- ═══ MAIN ══════════════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN
+       ═══════════════════════════════════════════════════════════ -->
   <div class="main">
+
+    <!-- TOPBAR -->
     <header class="topbar">
-      <div class="topbar-title" id="page-title">🏠 Inicio</div>
+      <div class="topbar-left">
+        <div class="topbar-breadcrumb">
+          HyperStock <span>›</span> <span id="page-title">Inicio</span>
+        </div>
+      </div>
       <div class="topbar-right">
-        <div class="status-pill"><span class="status-dot"></span> Bot Online</div>
+        <div class="status-pill">
+          <span class="status-dot"></span> Bot Online
+        </div>
       </div>
     </header>
 
     <div class="content">
 
-      <!-- ─── HOME ─────────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: HOME
+           ───────────────────────────────────────────────────── -->
       <div class="page active" id="page-home">
+
         <div class="server-banner">
-          <div class="server-icon-big">🏪</div>
-          <div class="server-banner-info">
-            <h2 id="guild-name">HyperStock</h2>
-            <p id="guild-desc">Cargando información del servidor...</p>
+          <div class="banner-pattern"></div>
+          <div class="server-icon">🏪</div>
+          <div class="server-info">
+            <div class="server-name" id="guild-name">HyperStock</div>
+            <div class="server-meta">
+              <span id="meta-members">— miembros</span>
+              <span id="meta-channels">— canales</span>
+              <span id="meta-created">—</span>
+            </div>
+          </div>
+          <div class="server-banner-badges">
+            <div class="server-tier-badge" id="boost-badge">🚀 Cargando...</div>
           </div>
         </div>
 
-        <div class="stats-grid" id="home-stats">
-          <div class="stat-card" style="--stat-color: var(--grad-accent); --stat-bg: var(--accent-dim)">
-            <div class="stat-icon">👥</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-members">—</div>
-              <div class="stat-label">Miembros</div>
-            </div>
+        <div class="stats-grid">
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#6366f1,#8b5cf6);--stat-bg:rgba(99,102,241,0.1);--stat-border:rgba(99,102,241,0.2);--stat-orb:rgba(99,102,241,0.1)">
+            <div class="stat-icon-wrap">👥</div>
+            <div class="stat-value" id="stat-members">—</div>
+            <div class="stat-label">Total Miembros</div>
           </div>
-          <div class="stat-card" style="--stat-color: var(--purple); --stat-bg: var(--purple-dim)">
-            <div class="stat-icon">📢</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-channels">—</div>
-              <div class="stat-label">Canales</div>
-            </div>
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#8b5cf6,#ec4899);--stat-bg:rgba(139,92,246,0.1);--stat-border:rgba(139,92,246,0.2);--stat-orb:rgba(139,92,246,0.1)">
+            <div class="stat-icon-wrap">📢</div>
+            <div class="stat-value" id="stat-channels">—</div>
+            <div class="stat-label">Canales</div>
           </div>
-          <div class="stat-card" style="--stat-color: var(--green); --stat-bg: var(--green-dim)">
-            <div class="stat-icon">🎭</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-roles">—</div>
-              <div class="stat-label">Roles</div>
-            </div>
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#10b981,#06b6d4);--stat-bg:rgba(16,185,129,0.1);--stat-border:rgba(16,185,129,0.2);--stat-orb:rgba(16,185,129,0.1)">
+            <div class="stat-icon-wrap">🎭</div>
+            <div class="stat-value" id="stat-roles">—</div>
+            <div class="stat-label">Roles</div>
           </div>
-          <div class="stat-card" style="--stat-color: var(--yellow); --stat-bg: var(--yellow-dim)">
-            <div class="stat-icon">⏱️</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-uptime">—</div>
-              <div class="stat-label">Uptime del Bot</div>
-            </div>
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#f59e0b,#f97316);--stat-bg:rgba(245,158,11,0.1);--stat-border:rgba(245,158,11,0.2);--stat-orb:rgba(245,158,11,0.1)">
+            <div class="stat-icon-wrap">⏱️</div>
+            <div class="stat-value" id="stat-uptime">—</div>
+            <div class="stat-label">Uptime Bot</div>
           </div>
-          <div class="stat-card" style="--stat-color: var(--cyan); --stat-bg: var(--cyan-dim)">
-            <div class="stat-icon">🏆</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-boosts">—</div>
-              <div class="stat-label">Boosts</div>
-            </div>
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#06b6d4,#6366f1);--stat-bg:rgba(6,182,212,0.1);--stat-border:rgba(6,182,212,0.2);--stat-orb:rgba(6,182,212,0.1)">
+            <div class="stat-icon-wrap">🚀</div>
+            <div class="stat-value" id="stat-boosts">—</div>
+            <div class="stat-label">Boosts</div>
           </div>
-          <div class="stat-card" style="--stat-color: var(--pink); --stat-bg: var(--pink-dim)">
-            <div class="stat-icon">🤖</div>
-            <div class="stat-info">
-              <div class="stat-value" id="stat-ping">—</div>
-              <div class="stat-label">Ping del Bot</div>
-            </div>
+          <div class="stat-card" style="--stat-grad:linear-gradient(90deg,#ec4899,#f97316);--stat-bg:rgba(236,72,153,0.1);--stat-border:rgba(236,72,153,0.2);--stat-orb:rgba(236,72,153,0.1)">
+            <div class="stat-icon-wrap">🤖</div>
+            <div class="stat-value" id="stat-ping">—</div>
+            <div class="stat-label">Ping API</div>
           </div>
         </div>
 
         <div class="grid-2">
           <div class="card">
-            <div class="flex-between mb-16">
-              <strong>📊 Actividad Reciente</strong>
+            <div class="card-title">
+              <div class="card-title-icon">📊</div>
+              Actividad Reciente
             </div>
-            <div id="home-logs" class="log-list">
-              <div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad reciente</p></div>
+            <div id="home-logs" class="log-feed">
+              <div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad aún</p></div>
             </div>
           </div>
           <div class="card">
-            <div class="flex-between mb-16">
-              <strong>ℹ️ Información del Servidor</strong>
+            <div class="card-title">
+              <div class="card-title-icon">ℹ️</div>
+              Información del Servidor
             </div>
-            <div id="guild-info-list" style="font-size:13.5px; line-height:2; color: var(--text-2)">
-              Cargando...
+            <div class="info-list" id="guild-info">
+              <div class="empty-state"><div class="empty-icon">⏳</div><p>Cargando...</p></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ─── EMBEDS ────────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: EMBEDS
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-embeds">
         <div class="section-header">
           <h2>📨 Enviar Embeds</h2>
-          <p>Envía los embeds predefinidos de HyperStock a cualquier canal del servidor</p>
+          <p>Selecciona un canal y envía los embeds de HyperStock al servidor</p>
         </div>
 
         <div class="channel-bar">
-          <label>📡 Canal destino:</label>
-          <select class="select" id="channelSelect" style="max-width:300px">
+          <span class="channel-bar-label">📡 Canal destino:</span>
+          <select class="select" id="channelSelect" style="max-width:300px; margin:0">
             <option value="">Cargando canales...</option>
           </select>
         </div>
 
-        <div class="embeds-grid" id="embeds-grid">
-          <!-- generado por JS -->
+        <div class="grid-auto" id="embeds-grid">
+          <!-- JS renders here -->
         </div>
       </div>
 
-      <!-- ─── EDITOR DE EMBEDS ──────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: EDITOR
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-editor">
         <div class="section-header">
           <h2>✏️ Editor de Embeds</h2>
-          <p>Personaliza cualquier embed y envíalo al canal que quieras</p>
+          <p>Personaliza cada detalle del embed con preview en tiempo real</p>
         </div>
 
-        <div class="editor-layout">
-          <!-- Formulario -->
+        <div class="editor-grid">
+          <!-- Controles -->
           <div class="card">
-            <div class="form-row">
-              <label class="input-label">📋 Plantilla base</label>
+            <div class="field">
+              <label class="label">📋 Plantilla base</label>
               <select class="select" id="editor-template" onchange="loadTemplate()">
                 <option value="">— Embed en blanco —</option>
                 <option value="tickets">🎫 Sistema de Tickets</option>
@@ -187,116 +213,137 @@
               </select>
             </div>
 
-            <div class="form-row-2">
+            <div class="field-row-2">
               <div>
-                <label class="input-label">Emoji del autor</label>
+                <label class="label">Emoji del autor</label>
                 <input class="input" id="editor-author-emoji" placeholder="🏪" oninput="updatePreview()"/>
               </div>
               <div>
-                <label class="input-label">Nombre del autor</label>
+                <label class="label">Nombre del autor</label>
                 <input class="input" id="editor-author-name" placeholder="Hyper Stock" oninput="updatePreview()"/>
               </div>
             </div>
 
-            <div class="form-row">
-              <label class="input-label">Título</label>
-              <input class="input" id="editor-title" placeholder="Título del embed" oninput="updatePreview()"/>
+            <div class="field">
+              <label class="label">Título</label>
+              <input class="input" id="editor-title" placeholder="Título del embed..." oninput="updatePreview()"/>
             </div>
 
-            <div class="form-row">
-              <label class="input-label">Descripción</label>
+            <div class="field">
+              <label class="label">Descripción</label>
               <textarea class="textarea" id="editor-desc" placeholder="Contenido del embed..." oninput="updatePreview()"></textarea>
             </div>
 
-            <div class="form-row-2">
+            <div class="field-row-2">
               <div>
-                <label class="input-label">URL de Imagen</label>
-                <input class="input" id="editor-image" placeholder="https://..." oninput="updatePreview()"/>
+                <label class="label">URL de Imagen</label>
+                <input class="input" id="editor-image" placeholder="https://i.imgur.com/..." oninput="updatePreview()"/>
               </div>
               <div>
-                <label class="input-label">URL de Thumbnail</label>
+                <label class="label">URL Thumbnail</label>
                 <input class="input" id="editor-thumb" placeholder="https://..." oninput="updatePreview()"/>
               </div>
             </div>
 
-            <div class="form-row-2">
+            <div class="field-row-2">
               <div>
-                <label class="input-label">Footer</label>
-                <input class="input" id="editor-footer" placeholder="Texto del footer" oninput="updatePreview()"/>
+                <label class="label">Texto Footer</label>
+                <input class="input" id="editor-footer" placeholder="» HyperStock" oninput="updatePreview()"/>
               </div>
               <div>
-                <label class="input-label">URL del ícono footer</label>
+                <label class="label">Ícono Footer (URL)</label>
                 <input class="input" id="editor-footer-icon" placeholder="https://..." oninput="updatePreview()"/>
               </div>
             </div>
 
-            <div class="form-row">
-              <label class="input-label">Color</label>
-              <div class="color-swatches">
-                <div class="swatch active" style="background:#5865f2" data-color="#5865f2" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#8b5cf6" data-color="#8b5cf6" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#ec4899" data-color="#ec4899" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#10b981" data-color="#10b981" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#ef4444" data-color="#ef4444" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#06b6d4" data-color="#06b6d4" onclick="pickColor(this)"></div>
-                <div class="swatch" style="background:#ffffff" data-color="#ffffff" onclick="pickColor(this)"></div>
-                <input type="color" id="editor-color-picker" value="#5865f2"
-                  style="width:28px;height:28px;border:none;background:none;cursor:pointer;padding:0;border-radius:6px;"
+            <div class="field">
+              <label class="label">Color del embed</label>
+              <div class="color-palette">
+                <div class="color-swatch active" style="background:#6366f1" data-color="#6366f1" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#8b5cf6" data-color="#8b5cf6" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#ec4899" data-color="#ec4899" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#10b981" data-color="#10b981" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#06b6d4" data-color="#06b6d4" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#f97316" data-color="#f97316" onclick="pickColor(this)"></div>
+                <div class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="pickColor(this)"></div>
+                <input type="color" id="editor-color-picker" value="#6366f1"
+                  title="Color personalizado"
+                  style="width:30px;height:30px;border:none;background:none;cursor:pointer;padding:0;border-radius:8px;"
                   oninput="pickColorRaw(this.value)"/>
               </div>
             </div>
 
-            <div class="form-row">
-              <label class="input-label">Botón / Tag</label>
-              <div class="emoji-picker-row" id="emoji-picker">
-                <button class="emoji-btn selected" data-emoji="none" onclick="pickEmoji(this)">—</button>
-                <button class="emoji-btn" data-emoji="💎" onclick="pickEmoji(this)">💎</button>
-                <button class="emoji-btn" data-emoji="⚡" onclick="pickEmoji(this)">⚡</button>
-                <button class="emoji-btn" data-emoji="🎨" onclick="pickEmoji(this)">🎨</button>
-                <button class="emoji-btn" data-emoji="💳" onclick="pickEmoji(this)">💳</button>
-                <button class="emoji-btn" data-emoji="🎫" onclick="pickEmoji(this)">🎫</button>
-                <button class="emoji-btn" data-emoji="🛠️" onclick="pickEmoji(this)">🛠️</button>
-                <button class="emoji-btn" data-emoji="🎁" onclick="pickEmoji(this)">🎁</button>
-                <button class="emoji-btn" data-emoji="🔥" onclick="pickEmoji(this)">🔥</button>
+            <div class="field">
+              <label class="label">Emoji del botón / tag</label>
+              <div class="emoji-row">
+                <button class="e-btn selected" data-emoji="none" onclick="pickEmoji(this)" title="Sin emoji">—</button>
+                <button class="e-btn" data-emoji="💎" onclick="pickEmoji(this)">💎</button>
+                <button class="e-btn" data-emoji="⚡" onclick="pickEmoji(this)">⚡</button>
+                <button class="e-btn" data-emoji="🎨" onclick="pickEmoji(this)">🎨</button>
+                <button class="e-btn" data-emoji="💳" onclick="pickEmoji(this)">💳</button>
+                <button class="e-btn" data-emoji="🎫" onclick="pickEmoji(this)">🎫</button>
+                <button class="e-btn" data-emoji="🛠️" onclick="pickEmoji(this)">🛠️</button>
+                <button class="e-btn" data-emoji="🎁" onclick="pickEmoji(this)">🎁</button>
+                <button class="e-btn" data-emoji="🔥" onclick="pickEmoji(this)">🔥</button>
+                <button class="e-btn" data-emoji="✅" onclick="pickEmoji(this)">✅</button>
               </div>
-              <input class="input mt-8" id="editor-tag" placeholder="» Texto del tag / botón" oninput="updatePreview()"/>
+              <input class="input mt-8" id="editor-tag" placeholder="Texto del botón / tag (ej: » Adquirir)" oninput="updatePreview()"/>
             </div>
 
             <div class="divider"></div>
-            <div class="flex-between">
-              <select class="select" id="editor-channel" style="max-width:240px">
-                <option value="">Selecciona canal...</option>
+
+            <div class="flex-between flex-gap">
+              <select class="select flex-1" id="editor-channel">
+                <option value="">Selecciona canal de destino...</option>
               </select>
-              <button class="btn btn-accent" onclick="sendCustomEmbed()">📨 Enviar Embed</button>
+              <button class="btn btn-primary" onclick="sendCustomEmbed()">
+                📨 Enviar Embed
+              </button>
             </div>
           </div>
 
           <!-- Preview -->
-          <div>
+          <div class="editor-preview-card">
             <div class="card">
               <div class="flex-between mb-16">
-                <strong style="font-size:14px">👁️ Preview en tiempo real</strong>
+                <span class="card-title" style="margin:0">👁️ Preview</span>
                 <span class="badge badge-staff">Discord</span>
               </div>
-              <div class="embed-preview" id="editor-preview">
-                <div class="embed-inner">
-                  <div class="embed-stripe" id="prev-stripe" style="background:#5865f2"></div>
-                  <div class="embed-body">
-                    <div class="embed-author-row">
-                      <span class="embed-author-icon" id="prev-author-emoji">🏪</span>
-                      <span class="embed-author-name" id="prev-author-name">Hyper Stock</span>
+
+              <div style="background:#313338; border-radius:8px; padding:12px; min-height:160px;">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                  <!-- Avatar placeholder -->
+                  <div style="width:40px;height:40px;background:var(--grad-primary);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">⚡</div>
+                  <div style="flex:1">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                      <span style="font-size:14px;font-weight:700;color:#fff;">HyperStock</span>
+                      <span style="background:#5865f2;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;">APP</span>
+                      <span style="font-size:12px;color:#949ba4;">Hoy a las 00:00</span>
                     </div>
-                    <div class="embed-title-text" id="prev-title" style="display:none"></div>
-                    <div class="embed-desc-text" id="prev-desc">El contenido del embed aparecerá aquí...</div>
-                    <div class="embed-image-row" id="prev-image-wrap" style="display:none">
-                      <img id="prev-image" src="" alt="imagen"/>
+
+                    <!-- Embed preview -->
+                    <div style="display:flex;background:#2b2d31;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);">
+                      <div id="prev-bar" style="width:4px;background:#6366f1;flex-shrink:0;"></div>
+                      <div style="padding:10px 14px 12px;flex:1;min-width:0;">
+                        <div id="prev-author" style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+                          <span id="prev-author-icon" style="font-size:13px;">🏪</span>
+                          <span id="prev-author-name" style="font-size:12.5px;font-weight:700;color:#fff;">Hyper Stock</span>
+                        </div>
+                        <div id="prev-title" style="font-size:14px;font-weight:700;color:#fff;margin-bottom:7px;display:none;"></div>
+                        <div id="prev-desc" style="font-size:12px;color:#dbdee1;line-height:1.65;white-space:pre-line;">El contenido del embed aparecerá aquí en tiempo real...</div>
+                        <div id="prev-img-wrap" style="display:none;margin-top:10px;">
+                          <img id="prev-img" src="" alt="" style="max-width:100%;max-height:120px;border-radius:4px;display:block;"/>
+                        </div>
+                        <div id="prev-footer" style="display:none;margin-top:9px;font-size:11px;color:#949ba4;display:flex;align-items:center;gap:6px;">
+                          <span id="prev-footer-icon"></span><span id="prev-footer-text"></span>
+                        </div>
+                        <div id="prev-tag" style="display:none;margin-top:10px;background:rgba(99,102,241,0.2);color:#818cf8;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:4px;display:inline-block;border:1px solid rgba(99,102,241,0.3);">
+                        </div>
+                      </div>
                     </div>
-                    <div class="embed-footer-row" id="prev-footer-row" style="display:none">
-                      <span id="prev-footer-icon"></span>
-                      <span id="prev-footer-text"></span>
-                    </div>
-                    <div class="embed-tag" id="prev-tag" style="display:none"></div>
+
                   </div>
                 </div>
               </div>
@@ -305,160 +352,159 @@
         </div>
       </div>
 
-      <!-- ─── TICKETS ───────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: TICKETS
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-tickets">
         <div class="section-header">
           <h2>🎫 Sistema de Tickets</h2>
-          <p>Gestión del sistema de soporte por tickets</p>
+          <p>Gestión del sistema de soporte automatizado</p>
         </div>
         <div class="grid-2">
           <div class="card">
-            <div class="flex-between mb-16">
-              <strong>Cómo funciona</strong>
-            </div>
-            <p class="text-muted text-sm" style="line-height:1.8">
-              El sistema de tickets se activa enviando el embed de <strong>Sistema de Tickets</strong> al canal deseado desde la sección Embeds.<br/><br/>
-              Los usuarios verán un menú desplegable con las categorías disponibles. Al seleccionar una, el bot crea automáticamente un canal privado.
-            </p>
-            <div class="divider"></div>
-            <strong style="font-size:13px">Categorías activas:</strong>
-            <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-              <div class="flex-gap"><span>💎</span> <span class="text-sm">Comprar Diamantes</span></div>
-              <div class="flex-gap"><span>⚡</span> <span class="text-sm">Comprar Boosts</span></div>
-              <div class="flex-gap"><span>🎨</span> <span class="text-sm">Decoraciones Discord</span></div>
-              <div class="flex-gap"><span>💳</span> <span class="text-sm">Métodos de Pago</span></div>
-              <div class="flex-gap"><span>🛠️</span> <span class="text-sm">Soporte General</span></div>
-            </div>
-          </div>
-          <div class="card">
-            <strong style="font-size:14px">⚙️ Configuración rápida</strong>
-            <div class="divider"></div>
-            <div class="form-row">
-              <label class="input-label">Canal para enviar tickets</label>
+            <div class="card-title"><div class="card-title-icon">⚙️</div> Despliegue Rápido</div>
+            <div class="field">
+              <label class="label">Canal donde desplegar los tickets</label>
               <select class="select" id="ticket-channel">
-                <option value="">Selecciona canal...</option>
+                <option value="">Selecciona un canal...</option>
               </select>
             </div>
-            <button class="btn btn-accent w-full mt-8" onclick="deployTicketEmbed()">
+            <button class="btn btn-primary btn-full mt-12" onclick="deployTicketEmbed()">
               🚀 Desplegar Sistema de Tickets
             </button>
+          </div>
+          <div class="card">
+            <div class="card-title"><div class="card-title-icon">📋</div> Categorías Activas</div>
+            <div class="info-list">
+              <div class="info-row"><span class="info-row-key">💎 Comprar Diamantes</span><span class="badge badge-staff">Activo</span></div>
+              <div class="info-row"><span class="info-row-key">⚡ Discord Boosts</span><span class="badge badge-staff">Activo</span></div>
+              <div class="info-row"><span class="info-row-key">🎨 Decoraciones Discord</span><span class="badge badge-staff">Activo</span></div>
+              <div class="info-row"><span class="info-row-key">💳 Métodos de Pago</span><span class="badge badge-staff">Activo</span></div>
+              <div class="info-row"><span class="info-row-key">🛠️ Soporte General</span><span class="badge badge-staff">Activo</span></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ─── USUARIOS ──────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: USERS
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-users">
         <div class="section-header flex-between">
           <div>
             <h2>👥 Usuarios del Panel</h2>
-            <p>Gestiona quién puede acceder al panel y qué puede hacer</p>
+            <p>Gestiona el acceso y los permisos de cada usuario</p>
           </div>
-          <button class="btn btn-accent" onclick="openModal('modal-user')">+ Nuevo Usuario</button>
+          <button class="btn btn-primary" onclick="openModal('modal-user')">+ Nuevo Usuario</button>
         </div>
-
         <div class="card">
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Permisos</th>
-                  <th>Creado</th>
-                  <th>Acciones</th>
+                  <th>Usuario</th><th>Rol</th><th>Acceso</th><th>Creado</th><th>Acciones</th>
                 </tr>
               </thead>
-              <tbody id="users-table-body">
-                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-3)">Cargando...</td></tr>
+              <tbody id="users-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-3)">Cargando...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ─── SEGURIDAD ─────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: SECURITY
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-security">
         <div class="section-header">
           <h2>🛡️ Seguridad del Servidor</h2>
-          <p>Protege tu servidor de spam, raids y contenido no deseado</p>
+          <p>Protege tu servidor automáticamente de spam, raids y contenido tóxico</p>
         </div>
 
         <div class="grid-2">
           <!-- Anti-Spam -->
-          <div class="card security-card">
-            <div class="card-title">🚫 Anti-Spam</div>
+          <div class="card security-section">
+            <div class="card-title"><div class="card-title-icon">🚫</div> Anti-Spam</div>
             <div class="toggle-row">
               <div class="toggle-info">
                 <h4>Activar Anti-Spam</h4>
-                <p>Detecta y actúa contra usuarios que envían mensajes masivos</p>
+                <p>Silencia, expulsa o banea a usuarios que envían mensajes masivos</p>
               </div>
-              <label class="toggle"><input type="checkbox" id="spam-enabled" onchange="saveSecurityConfig()"><span class="toggle-slider"></span></label>
+              <label class="toggle">
+                <input type="checkbox" id="spam-enabled" onchange="saveSecurityConfig()"/>
+                <span class="toggle-track"></span>
+              </label>
             </div>
-            <div class="form-row-2 mt-8">
+            <div class="field-row-2 mt-16">
               <div>
-                <label class="input-label">Máx. mensajes</label>
+                <label class="label">Máx. mensajes</label>
                 <input class="input" type="number" id="spam-max" value="5" min="2" max="20" oninput="saveSecurityConfig()"/>
               </div>
               <div>
-                <label class="input-label">Ventana (ms)</label>
+                <label class="label">Ventana (ms)</label>
                 <input class="input" type="number" id="spam-window" value="5000" min="1000" oninput="saveSecurityConfig()"/>
               </div>
             </div>
-            <div class="form-row">
-              <label class="input-label">Acción</label>
+            <div class="field">
+              <label class="label">Acción</label>
               <select class="select" id="spam-action" onchange="saveSecurityConfig()">
-                <option value="mute">Silenciar (5 min)</option>
-                <option value="kick">Expulsar</option>
-                <option value="ban">Banear</option>
+                <option value="mute">⏸️ Silenciar (5 min)</option>
+                <option value="kick">👢 Expulsar</option>
+                <option value="ban">🔨 Banear</option>
               </select>
             </div>
           </div>
 
           <!-- Anti-Raid -->
-          <div class="card security-card">
-            <div class="card-title">⚠️ Anti-Raid</div>
+          <div class="card security-section">
+            <div class="card-title"><div class="card-title-icon">⚠️</div> Anti-Raid</div>
             <div class="toggle-row">
               <div class="toggle-info">
                 <h4>Activar Anti-Raid</h4>
-                <p>Detecta entradas masivas al servidor y actúa automáticamente</p>
+                <p>Detecta entradas masivas y actúa automáticamente</p>
               </div>
-              <label class="toggle"><input type="checkbox" id="raid-enabled" onchange="saveSecurityConfig()"><span class="toggle-slider"></span></label>
+              <label class="toggle">
+                <input type="checkbox" id="raid-enabled" onchange="saveSecurityConfig()"/>
+                <span class="toggle-track"></span>
+              </label>
             </div>
-            <div class="form-row-2 mt-8">
+            <div class="field-row-2 mt-16">
               <div>
-                <label class="input-label">Máx. joins</label>
+                <label class="label">Máx. joins</label>
                 <input class="input" type="number" id="raid-max" value="10" min="3" max="50" oninput="saveSecurityConfig()"/>
               </div>
               <div>
-                <label class="input-label">Ventana (ms)</label>
+                <label class="label">Ventana (ms)</label>
                 <input class="input" type="number" id="raid-window" value="10000" min="1000" oninput="saveSecurityConfig()"/>
               </div>
             </div>
-            <div class="form-row">
-              <label class="input-label">Acción</label>
+            <div class="field">
+              <label class="label">Acción</label>
               <select class="select" id="raid-action" onchange="saveSecurityConfig()">
-                <option value="kick">Expulsar</option>
-                <option value="ban">Banear</option>
+                <option value="kick">👢 Expulsar</option>
+                <option value="ban">🔨 Banear</option>
               </select>
             </div>
           </div>
 
-          <!-- Filtro de palabras -->
-          <div class="card security-card" style="grid-column: 1 / -1">
-            <div class="card-title">🤬 Filtro de Palabras</div>
-            <p class="text-muted text-sm mb-16">Los mensajes que contengan estas palabras serán eliminados automáticamente.</p>
-            <div class="tag-list" id="word-tags">
+          <!-- Word Filter -->
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-title"><div class="card-title-icon">🤬</div> Filtro de Palabras</div>
+            <p class="text-muted text-sm mb-16">Los mensajes con estas palabras serán eliminados automáticamente.</p>
+            <div class="tags-wrap" id="word-tags">
               <span class="text-muted text-sm">Sin palabras configuradas</span>
             </div>
-            <div class="add-word-row mt-8">
-              <input class="input" id="new-word-input" placeholder="Agregar palabra..." onkeydown="if(event.key==='Enter')addBannedWord()"/>
+            <div class="add-word-row">
+              <input class="input" id="new-word-input" placeholder="Agregar palabra prohibida..."
+                onkeydown="if(event.key==='Enter')addBannedWord()"/>
               <button class="btn btn-danger" onclick="addBannedWord()">+ Agregar</button>
             </div>
           </div>
 
-          <!-- Canal de logs -->
+          <!-- Log channel -->
           <div class="card">
-            <div class="card-title">📋 Canal de Logs de Seguridad</div>
+            <div class="card-title"><div class="card-title-icon">📋</div> Canal de Alertas</div>
             <p class="text-muted text-sm mb-16">El bot enviará alertas de seguridad a este canal.</p>
             <select class="select" id="log-channel-select" onchange="saveSecurityConfig()">
               <option value="">Sin canal configurado</option>
@@ -467,32 +513,34 @@
         </div>
       </div>
 
-      <!-- ─── LOGS ───────────────────────────────────────────────── -->
+      <!-- ─────────────────────────────────────────────────────
+           PAGE: LOGS
+           ───────────────────────────────────────────────────── -->
       <div class="page" id="page-logs">
         <div class="section-header flex-between">
           <div>
             <h2>📋 Logs de Auditoría</h2>
-            <p>Historial de eventos del servidor y del panel en tiempo real</p>
+            <p>Historial completo de eventos del servidor y del panel</p>
           </div>
           <div class="flex-gap">
-            <select class="select btn-sm" id="log-filter" onchange="loadLogs()" style="width:160px">
+            <select class="select" id="log-filter" onchange="loadLogs()" style="width:180px">
               <option value="">Todos los eventos</option>
-              <option value="member_join">Joins</option>
-              <option value="member_leave">Salidas</option>
-              <option value="member_ban">Bans</option>
-              <option value="message_delete">Mensajes eliminados</option>
-              <option value="spam_detected">Spam</option>
-              <option value="raid_detected">Raid</option>
-              <option value="embed_sent">Embeds enviados</option>
-              <option value="web_login">Logins web</option>
+              <option value="member_join">📥 Joins</option>
+              <option value="member_leave">📤 Salidas</option>
+              <option value="member_ban">🔨 Bans</option>
+              <option value="message_delete">🗑️ Mensajes eliminados</option>
+              <option value="spam_detected">🚫 Spam</option>
+              <option value="raid_detected">⚠️ Raid</option>
+              <option value="embed_sent">📨 Embeds</option>
+              <option value="web_login">🔐 Logins</option>
             </select>
-            <button class="btn btn-outline btn-sm" onclick="loadLogs()">🔄 Actualizar</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadLogs()">🔄 Actualizar</button>
             <button class="btn btn-danger btn-sm" onclick="clearLogsAction()">🗑️ Limpiar</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="log-list" id="logs-container">
+          <div id="logs-feed" class="log-feed">
             <div class="empty-state"><div class="empty-icon">📋</div><p>Sin logs registrados</p></div>
           </div>
         </div>
@@ -502,37 +550,37 @@
   </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- ─── MODAL: NUEVO USUARIO ────────────────────────────────────── -->
+<!-- ═══ MODAL: NUEVO USUARIO ════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-user">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-hdr">
       <h3>👤 Nuevo Usuario</h3>
       <button class="modal-close" onclick="closeModal('modal-user')">✕</button>
     </div>
-    <div class="form-row">
-      <label class="input-label">Usuario</label>
-      <input class="input" id="new-username" placeholder="nombre de usuario"/>
+    <div class="field">
+      <label class="label">Nombre de usuario</label>
+      <input class="input" id="new-username" placeholder="ej: staff_juan" autocomplete="off"/>
     </div>
-    <div class="form-row">
-      <label class="input-label">Contraseña</label>
-      <input class="input" type="password" id="new-password" placeholder="contraseña"/>
+    <div class="field">
+      <label class="label">Contraseña</label>
+      <input class="input" type="password" id="new-password" placeholder="contraseña segura"/>
     </div>
-    <div class="form-row">
-      <label class="input-label">Rol</label>
+    <div class="field">
+      <label class="label">Rol</label>
       <select class="select" id="new-role">
-        <option value="staff">Staff — puede enviar embeds y ver logs</option>
-        <option value="viewer">Viewer — solo lectura</option>
-        <option value="admin">Admin — acceso total</option>
+        <option value="staff">👮 Staff — Puede enviar embeds y ver logs</option>
+        <option value="viewer">👁️ Viewer — Solo lectura del panel</option>
+        <option value="admin">⚡ Admin — Acceso total</option>
       </select>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-user')">Cancelar</button>
-      <button class="btn btn-accent" onclick="createUser()">Crear Usuario</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancelar</button>
+      <button class="btn btn-primary" onclick="createUser()">Crear Usuario</button>
     </div>
   </div>
 </div>
 
-<!-- ─── TOAST CONTAINER ─────────────────────────────────────────── -->
+<!-- Toast container -->
 <div id="toast-container"></div>
 
 <script src="/js/dashboard.js"></script>

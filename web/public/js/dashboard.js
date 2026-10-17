@@ -77,9 +77,8 @@ const EMBED_LIST = [
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSession();
   await loadChannels();
-  loadHome();
   renderEmbedCards();
-  if (currentPage === 'home') loadHome();
+  loadHome();
 });
 
 // ── SESSION ───────────────────────────────────────────────────────
@@ -92,7 +91,7 @@ async function loadSession() {
   document.getElementById('user-avatar').textContent = data.username[0].toUpperCase();
 
   if (data.role === 'admin') {
-    document.getElementById('admin-label').style.display = '';
+    document.getElementById('admin-section').style.display = '';
     document.getElementById('nav-users').style.display    = '';
     document.getElementById('nav-security').style.display = '';
     document.getElementById('nav-logs').style.display     = '';
@@ -134,24 +133,26 @@ async function loadHome() {
   const guild = await api('/api/guild');
   if (!guild) return;
 
-  document.getElementById('guild-name').textContent = guild.name;
-  document.getElementById('guild-desc').textContent =
-    `${guild.memberCount} miembros · Tier ${guild.boostTier} · Creado ${new Date(guild.createdAt).toLocaleDateString('es')}`;
+  document.getElementById('guild-name').textContent        = guild.name;
+  document.getElementById('meta-members').textContent      = `${guild.memberCount.toLocaleString()} miembros`;
+  document.getElementById('meta-channels').textContent     = `${guild.channelCount} canales`;
+  document.getElementById('meta-created').textContent      = `Creado ${new Date(guild.createdAt).toLocaleDateString('es')}`;
+  document.getElementById('boost-badge').textContent       = `🚀 Boost Tier ${guild.boostTier} · ${guild.boostCount} boosts`;
 
-  document.getElementById('stat-members').textContent  = guild.memberCount;
+  document.getElementById('stat-members').textContent  = guild.memberCount.toLocaleString();
   document.getElementById('stat-channels').textContent = guild.channelCount;
   document.getElementById('stat-roles').textContent    = guild.roleCount;
   document.getElementById('stat-uptime').textContent   = guild.uptime;
   document.getElementById('stat-boosts').textContent   = guild.boostCount;
   document.getElementById('stat-ping').textContent     = guild.ping;
 
-  document.getElementById('guild-info-list').innerHTML = `
-    <div>🆔 <strong>ID:</strong> ${process?.env?.GUILD_ID || '—'}</div>
-    <div>👑 <strong>Owner ID:</strong> ${guild.ownerId}</div>
-    <div>💬 <strong>Canales:</strong> ${guild.channelCount}</div>
-    <div>🎭 <strong>Roles:</strong> ${guild.roleCount}</div>
-    <div>🚀 <strong>Boost Tier:</strong> ${guild.boostTier}</div>
-    <div>⚡ <strong>Ping API:</strong> ${guild.ping}</div>
+  document.getElementById('guild-info').innerHTML = `
+    <div class="info-row"><span class="info-row-key">👑 Owner ID</span><span class="info-row-val">${guild.ownerId}</span></div>
+    <div class="info-row"><span class="info-row-key">📢 Canales</span><span class="info-row-val">${guild.channelCount}</span></div>
+    <div class="info-row"><span class="info-row-key">🎭 Roles</span><span class="info-row-val">${guild.roleCount}</span></div>
+    <div class="info-row"><span class="info-row-key">🚀 Boost Tier</span><span class="info-row-val">${guild.boostTier}</span></div>
+    <div class="info-row"><span class="info-row-key">⚡ Ping API</span><span class="info-row-val">${guild.ping}</span></div>
+    <div class="info-row"><span class="info-row-key">📅 Creado</span><span class="info-row-val">${new Date(guild.createdAt).toLocaleDateString('es')}</span></div>
   `;
 
   // últimos logs
@@ -298,29 +299,29 @@ function updatePreview() {
   const footerIcon  = document.getElementById('editor-footer-icon')?.value || '';
   const tag         = document.getElementById('editor-tag').value;
 
-  document.getElementById('prev-stripe').style.background    = editorColor;
-  document.getElementById('prev-author-emoji').textContent   = authorEmoji;
-  document.getElementById('prev-author-name').textContent    = authorName;
+  document.getElementById('prev-bar').style.background      = editorColor;
+  document.getElementById('prev-author-icon').textContent   = authorEmoji;
+  document.getElementById('prev-author-name').textContent   = authorName;
 
   const titleEl = document.getElementById('prev-title');
   titleEl.textContent = title; titleEl.style.display = title ? '' : 'none';
 
   document.getElementById('prev-desc').innerHTML = desc.replace(/\n/g,'<br>');
 
-  const imgWrap = document.getElementById('prev-image-wrap');
-  const imgEl   = document.getElementById('prev-image');
+  const imgWrap = document.getElementById('prev-img-wrap');
+  const imgEl   = document.getElementById('prev-img');
   if (image) { imgEl.src = image; imgWrap.style.display = ''; }
   else        { imgWrap.style.display = 'none'; }
 
-  const footerRow = document.getElementById('prev-footer-row');
+  const footerRow = document.getElementById('prev-footer');
   if (footerText) {
-    document.getElementById('prev-footer-icon').textContent = footerIcon ? '' : '';
+    document.getElementById('prev-footer-icon').textContent = '';
     document.getElementById('prev-footer-text').textContent = footerText;
-    footerRow.style.display = '';
+    footerRow.style.display = 'flex';
   } else { footerRow.style.display = 'none'; }
 
   const tagEl = document.getElementById('prev-tag');
-  if (tag) { tagEl.textContent = (editorEmoji !== 'none' ? editorEmoji + ' ' : '') + tag; tagEl.style.display = ''; }
+  if (tag) { tagEl.textContent = (editorEmoji !== 'none' ? editorEmoji + ' ' : '') + tag; tagEl.style.display = 'inline-block'; }
   else      { tagEl.style.display = 'none'; }
 }
 
@@ -351,7 +352,7 @@ async function sendCustomEmbed() {
 async function loadUsers() {
   const users = await api('/api/users');
   if (!users) return;
-  const tbody = document.getElementById('users-table-body');
+  const tbody = document.getElementById('users-tbody');
   if (!users.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-3)">Sin usuarios</td></tr>';
     return;
@@ -473,25 +474,25 @@ async function loadLogs() {
   const type = document.getElementById('log-filter')?.value || '';
   const url  = `/api/logs?limit=100${type ? '&type=' + type : ''}`;
   const logs = await api(url);
-  const container = document.getElementById('logs-container');
+  const container = document.getElementById('logs-feed');
 
   if (!logs?.length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Sin logs registrados</p></div>';
     return;
   }
-  container.innerHTML = '<div class="log-list">' + logs.map(renderLogItem).join('') + '</div>';
+  container.innerHTML = '<div class="log-feed">' + logs.map(renderLogItem).join('') + '</div>';
 }
 
 function renderLogItem(log) {
   const time = new Date(log.timestamp).toLocaleString('es', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
   return `
-    <div class="log-item">
-      <span class="log-icon">${log.icon || '📋'}</span>
-      <div class="log-body">
-        <div class="log-desc">${log.description}</div>
+    <div class="log-entry">
+      <span class="log-emoji">${log.icon || '📋'}</span>
+      <div class="log-content">
+        <div class="log-text">${log.description}</div>
         <div class="log-time">${time}</div>
       </div>
-      <span class="log-type-badge">${log.type.replace(/_/g,' ')}</span>
+      <span class="log-chip">${log.type.replace(/_/g,' ')}</span>
     </div>
   `;
 }
