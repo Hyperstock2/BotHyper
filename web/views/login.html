@@ -3,36 +3,125 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HyperStock — Acceso</title>
+  <title>Solo Hyper Stock</title>
+  <!-- Favicon con la imagen del logo -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg"/>
   <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    /* ── FONDO CON BANNER ─────────────────────────────────────── */
+    .login-page {
+      background:
+        linear-gradient(to bottom,
+          rgba(6,6,16,0.15) 0%,
+          rgba(6,6,16,0.45) 40%,
+          rgba(6,6,16,0.88) 75%,
+          rgba(6,6,16,1)   100%
+        ),
+        url('https://i.postimg.cc/nLw8Vvnz/a1f47cf3-3f86-4ded-aabf-05d5117a5fb9.jpg') center/cover no-repeat fixed;
+      position: relative;
+    }
+
+    /* Desvanecido lateral adicional */
+    .login-page::after {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        linear-gradient(to right,
+          rgba(6,6,16,0.6) 0%, transparent 30%,
+          transparent 70%, rgba(6,6,16,0.6) 100%
+        );
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Partículas de luz sobre el fondo */
+    .login-page .ambient { z-index: 0; }
+    .login-page .mesh    { opacity: 0.4; }
+
+    /* Card más premium sobre el banner */
+    .login-card {
+      background: rgba(8,8,20,0.82) !important;
+      border-color: rgba(255,255,255,0.1) !important;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 32px 80px rgba(0,0,0,0.7),
+        0 0 60px rgba(99,102,241,0.12) !important;
+      z-index: 1 !important;
+    }
+
+    /* Logo imagen — estático, sin animación flotante */
+    .login-logo-img {
+      width: 96px; height: 96px;
+      border-radius: 22px;
+      object-fit: cover;
+      margin: 0 auto 22px;
+      display: block;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 0 0 4px rgba(99,102,241,0.15),
+        0 8px 32px rgba(0,0,0,0.6),
+        0 0 40px rgba(99,102,241,0.2);
+    }
+
+    /* Texto del nombre */
+    .login-h1 {
+      font-size: 28px !important;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+    .login-sub { color: rgba(255,255,255,0.45) !important; }
+
+    /* Inputs sobre el fondo oscuro */
+    .f-input {
+      background: rgba(255,255,255,0.05) !important;
+      border-color: rgba(255,255,255,0.08) !important;
+      color: #fff !important;
+    }
+    .f-input:focus {
+      background: rgba(99,102,241,0.08) !important;
+      border-color: #6366f1 !important;
+    }
+    .f-input::placeholder { color: rgba(255,255,255,0.25) !important; }
+  </style>
 </head>
 <body class="login-page">
-  <!-- Ambient -->
-  <div class="ambient"><div class="orb orb-a"></div><div class="orb orb-b"></div><div class="orb orb-c"></div></div>
+  <div class="ambient">
+    <div class="orb orb-a" style="opacity:.18"></div>
+    <div class="orb orb-b" style="opacity:.12"></div>
+  </div>
   <div class="mesh"></div>
 
-  <div class="login-card" style="position:relative;z-index:1">
-    <div class="login-icon">⚡</div>
+  <div class="login-card" style="position:relative;z-index:1;max-width:400px">
+    <!-- Logo real de HyperStock -->
+    <img
+      class="login-logo-img"
+      src="https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg"
+      alt="HyperStock Logo"
+      draggable="false"
+    />
+
     <div class="login-h1">HyperStock</div>
     <div class="login-sub">Panel de control del servidor</div>
 
-    <div id="err" class="alert-error" style="display:none">
+    <div id="err" class="alert-error" style="display:none;margin-top:20px">
       <span>🔒</span> Credenciales incorrectas. Inténtalo de nuevo.
     </div>
 
-    <form class="login-form" action="/login" method="POST" autocomplete="off">
+    <form class="login-form" action="/login" method="POST" autocomplete="off" style="margin-top:28px">
       <div class="f-group">
         <label class="f-label">Usuario</label>
-        <input class="f-input" type="text" name="username" placeholder="Nombre de usuario" required/>
+        <input class="f-input" type="text" name="username" placeholder="Nombre de usuario" required autocomplete="off"/>
       </div>
       <div class="f-group">
         <label class="f-label">Contraseña</label>
         <input class="f-input" type="password" name="password" placeholder="••••••••••" required/>
       </div>
-      <button type="submit" class="btn-login">Ingresar al Panel <span>→</span></button>
+      <button type="submit" class="btn-login" style="margin-top:8px">
+        Ingresar al Panel &nbsp;→
+      </button>
     </form>
 
-    <div class="login-footer">HyperStock Bot Panel v3.0 · 2024</div>
+    <div class="login-footer" style="margin-top:24px">HyperStock · Panel v3.0 · 2024</div>
   </div>
 
   <script>

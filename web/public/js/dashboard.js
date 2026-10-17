@@ -982,3 +982,136 @@ const setVal = (id, v) => { const el = $(id); if (el) el.value = v; };
 const setChecked = (id, v) => { const el = $(id); if (el) el.checked = v; };
 const toggleEl = (id, show) => { const el = $(id); if (el) el.style.display = show ? '' : 'none'; };
 const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SISTEMA DE EMOJIS DISCORD — PARSER Y RENDERER
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Parsea un emoji Discord en cualquier formato:
+ *  - Unicode: 🔥
+ *  - Código texto: <:nombre:ID> o <a:nombre:ID>
+ * Devuelve { type, emoji, name, id, animated, imgUrl, display }
+ */
+function parseDiscordEmoji(input) {
+  if (!input) return null;
+  const str = input.trim();
+
+  // Formato <a:nombre:ID> (animado)
+  const animMatch = str.match(/^<a:(\w+):(\d+)>$/);
+  if (animMatch) {
+    return {
+      type: 'custom', animated: true,
+      name: animMatch[1], id: animMatch[2],
+      imgUrl: `https://cdn.discordapp.com/emojis/${animMatch[2]}.gif?size=32&quality=lossless`,
+      display: `<img src="https://cdn.discordapp.com/emojis/${animMatch[2]}.gif?size=32" style="width:20px;height:20px;vertical-align:middle;border-radius:3px" alt="${animMatch[1]}"/>`,
+    };
+  }
+
+  // Formato <:nombre:ID> (estático)
+  const staticMatch = str.match(/^<:(\w+):(\d+)>$/);
+  if (staticMatch) {
+    return {
+      type: 'custom', animated: false,
+      name: staticMatch[1], id: staticMatch[2],
+      imgUrl: `https://cdn.discordapp.com/emojis/${staticMatch[2]}.webp?size=32`,
+      display: `<img src="https://cdn.discordapp.com/emojis/${staticMatch[2]}.webp?size=32" style="width:20px;height:20px;vertical-align:middle;border-radius:3px" alt="${staticMatch[1]}"/>`,
+    };
+  }
+
+  // Solo ID numérico (el usuario copió solo el ID)
+  const idOnly = str.match(/^(\d{15,20})$/);
+  if (idOnly) {
+    return {
+      type: 'custom', animated: false,
+      name: 'emoji', id: idOnly[1],
+      imgUrl: `https://cdn.discordapp.com/emojis/${idOnly[1]}.webp?size=32`,
+      display: `<img src="https://cdn.discordapp.com/emojis/${idOnly[1]}.webp?size=32" style="width:20px;height:20px;vertical-align:middle;border-radius:3px" alt="emoji"/>`,
+    };
+  }
+
+  // Unicode normal
+  if ([...str].length <= 4) {
+    return { type: 'unicode', emoji: str, display: str, name: str };
+  }
+
+  // Texto plano (no parseable como emoji)
+  return { type: 'text', display: str, name: str };
+}
+
+/**
+ * Renderiza el emoji del autor en tiempo real en el preview.
+ * Se llama desde updatePreview() y desde el input del autor.
+ */
+function renderAuthorEmojiPreview(inputVal) {
+  const parsed = parseDiscordEmoji(inputVal);
+  if (!parsed) return;
+  const el = $('prev-author-icon');
+  if (!el) return;
+
+  if (parsed.type === 'custom') {
+    el.innerHTML = `<img src="${parsed.imgUrl}" style="width:18px;height:18px;vertical-align:middle;border-radius:3px" alt="${parsed.name}" onerror="this.style.display='none'"/>`;
+  } else {
+    el.textContent = parsed.display || '';
+  }
+}
+
+/**
+ * Muestra un indicador visual del emoji en el trigger del selector.
+ */
+function refreshEmojiTrigger(triggerId, inputVal) {
+  const el = $(triggerId);
+  if (!el) return;
+  const parsed = parseDiscordEmoji(inputVal);
+  if (!parsed) return;
+
+  if (parsed.type === 'custom') {
+    el.innerHTML = `<img src="${parsed.imgUrl}" style="width:22px;height:22px;object-fit:contain;border-radius:3px" alt="${parsed.name}" onerror="this.textContent='⚡'"/>`;
+  } else {
+    el.textContent = parsed.display || '😀';
+  }
+}
+
+// Listener para el input de emoji del autor — actualiza trigger y preview
+document.addEventListener('DOMContentLoaded', () => {
+  const authorInput = $('editor-author-emoji');
+  if (authorInput) {
+    authorInput.addEventListener('input', () => {
+      refreshEmojiTrigger('author-emoji-display', authorInput.value);
+      updatePreview();
+    });
+  }
+
+  const btnInput = $('editor-btn-emoji');
+  if (btnInput) {
+    btnInput.addEventListener('input', () => {
+      refreshEmojiTrigger('btn-emoji-display', btnInput.value);
+      updatePreview();
+    });
+  }
+});
+
+// Parchamos updatePreview para usar el parser de emojis
+const _origUpdatePreview = _doUpdatePreview;
+window._doUpdatePreview = function() {
+  _origUpdatePreview();
+  // Después del update normal, renderizamos el emoji del autor correctamente
+  const authorEmoji = $('editor-author-emoji')?.value || '';
+  if (authorEmoji) renderAuthorEmojiPreview(authorEmoji);
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MEJORAS SIDEBAR: logo HyperStock en el brand
+   ═══════════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Reemplazar el emoji ⚡ del sidebar por la imagen del logo
+  const sbLogo = document.querySelector('.sb-logo');
+  if (sbLogo) {
+    sbLogo.innerHTML = `<img src="https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg"
+      style="width:38px;height:38px;border-radius:10px;object-fit:cover;display:block"
+      alt="HyperStock" draggable="false"/>`;
+    sbLogo.style.background = 'none';
+    sbLogo.style.boxShadow  = 'none';
+    sbLogo.style.padding    = '0';
+  }
+});

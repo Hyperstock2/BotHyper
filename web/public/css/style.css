@@ -723,3 +723,188 @@ tbody td{padding:11px 16px;vertical-align:middle}
   .login-card{padding:36px 28px}
   .emoji-panel{width:calc(100vw - 32px);left:0}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PATCH v3.1 — Logo real, fondo banner, emojis Discord, mejoras UI
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── FONDO LOGIN CON BANNER ──────────────────────────────────────────── */
+.login-page {
+  background:
+    linear-gradient(to bottom,
+      rgba(6,6,16,0.10) 0%,
+      rgba(6,6,16,0.50) 45%,
+      rgba(6,6,16,0.92) 80%,
+      rgba(6,6,16,1.00) 100%
+    ),
+    url('https://i.postimg.cc/nLw8Vvnz/a1f47cf3-3f86-4ded-aabf-05d5117a5fb9.jpg')
+    center / cover no-repeat fixed;
+}
+
+/* Fade lateral sobre el banner */
+.login-page::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 100% at 0% 50%,   rgba(6,6,16,.7) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 100% at 100% 50%,  rgba(6,6,16,.7) 0%, transparent 100%),
+    radial-gradient(ellipse 100% 30% at 50% 0%,    rgba(6,6,16,.5) 0%, transparent 100%);
+}
+
+/* ── LOGIN CARD SOBRE BANNER ─────────────────────────────────────────── */
+.login-page .login-card {
+  background: rgba(8,8,22,0.86) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 32px 80px rgba(0,0,0,.75),
+    0 0 80px rgba(99,102,241,.10),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+}
+
+/* ── LOGO IMAGEN ─────────────────────────────────────────────────────── */
+.login-logo-img {
+  width: 96px; height: 96px;
+  border-radius: 22px;
+  object-fit: cover;
+  margin: 0 auto 22px;
+  display: block;
+  border: 2px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 0 0 5px rgba(99,102,241,.15),
+    0 8px 40px rgba(0,0,0,.65),
+    0 0 50px rgba(99,102,241,.18);
+  /* Sin animación, estático */
+  animation: none !important;
+}
+
+/* Override del icono emoji de login (por si queda el ⚡ de respaldo) */
+.login-icon { display: none; }
+
+/* ── SIDEBAR LOGO CON IMAGEN ─────────────────────────────────────────── */
+.sb-logo img {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── EMOJI CUSTOM EN EL EDITOR ───────────────────────────────────────── */
+/* Cuando el trigger muestra una imagen de emoji custom Discord */
+.emoji-trigger img {
+  width: 22px; height: 22px;
+  object-fit: contain; border-radius: 3px;
+}
+
+/* Preview del emoji en el panel del autor */
+#prev-author-icon img {
+  width: 18px; height: 18px;
+  vertical-align: middle; border-radius: 3px;
+}
+
+/* Input del emoji con indicador visual cuando hay emoji custom */
+.emoji-input-row .input.has-custom-emoji {
+  background: rgba(99,102,241,.08);
+  border-color: var(--indigo-border);
+  color: var(--indigo-l);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+}
+
+/* Tooltip de ayuda del formato de emoji */
+.emoji-format-hint {
+  font-size: 10.5px; color: var(--t4); margin-top: 4px;
+  line-height: 1.4;
+}
+.emoji-format-hint code {
+  background: rgba(255,255,255,.06); padding: 1px 5px;
+  border-radius: 3px; font-family: 'JetBrains Mono',monospace; color: var(--indigo-l);
+}
+
+/* ── MEJORAS GENERALES DEL PANEL ─────────────────────────────────────── */
+
+/* Borde top arcoiris en cards hover */
+.card.rainbow-top::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg,#6366f1,#7c3aed,#ec4899,#f59e0b);
+  opacity: 0; transition: opacity .25s;
+  border-radius: var(--r4) var(--r4) 0 0;
+}
+.card.rainbow-top:hover::before { opacity: 1; }
+
+/* Número badge en botones de acción */
+.action-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  background: var(--indigo-dim); border-radius: var(--r7);
+  font-size: 10.5px; font-weight: 800; color: var(--indigo-l);
+}
+
+/* Mejora: select con canal tiene prefijo # visible */
+.channel-bar select option::before { content: '# '; }
+
+/* Línea separadora decorativa con gradient */
+.divider-gradient {
+  height: 1px; margin: 20px 0;
+  background: linear-gradient(90deg, transparent, var(--indigo-dim), transparent);
+}
+
+/* Panel de embeds — badge de tipo sobre la card */
+.embed-type-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: 10px; font-weight: 800; padding: 2px 8px;
+  background: rgba(0,0,0,.4); border: 1px solid var(--b1);
+  border-radius: var(--r7); color: var(--t3);
+  backdrop-filter: blur(6px);
+}
+
+/* Animación de carga de página suave */
+.page.active { animation: page-in .28s cubic-bezier(0.16,1,0.3,1); }
+@keyframes page-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+/* Status pill con mayor contraste */
+.status-pill { letter-spacing: .3px; }
+
+/* Stat cards counter animation */
+@keyframes count-up { from { opacity:.3; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
+.sc-value { animation: count-up .4s var(--e-out); }
+
+/* Topbar con sombra inferior */
+.topbar { box-shadow: 0 1px 0 var(--b1), 0 4px 16px rgba(0,0,0,.3); }
+
+/* Mejora del campo de desc — resize solo vertical con agarre visible */
+.textarea { resize: vertical; min-height: 90px; }
+
+/* Indicador de borrador auto-guardado */
+.autosave-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--t3); padding: 3px 8px;
+  border-radius: var(--r7); background: rgba(255,255,255,.03);
+}
+.autosave-indicator.saving { color: var(--amber); }
+.autosave-indicator.saved  { color: var(--green); }
+
+/* Scrollbar dentro de los emoji grids */
+.emoji-grid { scrollbar-width: thin; }
+
+/* Mejora visual del preview de Discord */
+.discord-mock {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+
+/* Embed box — borde más sutil */
+.embed-box {
+  box-shadow: 0 2px 8px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+
+/* ── RESPONSIVE MEJORAS ──────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .login-card { padding: 32px 22px; }
+  .login-logo-img { width: 76px; height: 76px; }
+  .server-banner { padding: 20px; }
+  .stat-card { padding: 16px; }
+  .sc-value { font-size: 20px; }
+}

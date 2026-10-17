@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HyperStock Panel</title>
+  <title>Solo Hyper Stock</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg"/>
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
@@ -236,6 +237,9 @@
                         </button>
                         <input class="input" id="editor-author-emoji" placeholder="🏪 o código Discord" oninput="onAuthorEmojiInput()" value="🏪"/>
                       </div>
+                      <div class="emoji-format-hint">
+                        Unicode: <code>🔥</code> · Custom: <code>&lt;:nombre:ID&gt;</code> · Animado: <code>&lt;a:nombre:ID&gt;</code>
+                      </div>
                       <div class="emoji-panel" id="author-emoji-panel">
                         <div class="emoji-search-row">
                           <input class="emoji-search" placeholder="Buscar emoji..." oninput="filterEmojis('author', this.value)"/>
@@ -399,7 +403,9 @@
                           <button class="emoji-trigger" onclick="toggleEmojiPanel('btn-emoji-panel')">
                             <span id="btn-emoji-display">💎</span>
                           </button>
-                          <input class="input" id="editor-btn-emoji" placeholder="💎" oninput="updatePreview()" value="💎"/>
+                          <input class="input" id="editor-btn-emoji" placeholder="💎 o <:nombre:ID>" oninput="updatePreview()" value="💎"/>
+                        </div>
+                        <div class="emoji-format-hint">Soporta emojis Unicode y custom de Discord</div>
                         </div>
                         <div class="emoji-panel" id="btn-emoji-panel">
                           <div class="emoji-search-row"><input class="emoji-search" placeholder="Buscar..." oninput="filterEmojis('btn', this.value)"/></div>
