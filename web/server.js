@@ -295,6 +295,8 @@ app.get('/api/voice-channels', requireAuth, async (req, res) => {
     const client = app.get('discordClient');
     const guild  = await client.guilds.fetch(process.env.GUILD_ID);
     await guild.channels.fetch();
+    await guild.members.fetch(); // necesario para detectar el bot
+
     const channels = guild.channels.cache
       .filter(c => c.type === 2) // GuildVoice
       .sort((a, b) => a.position - b.position)
@@ -303,9 +305,30 @@ app.get('/api/voice-channels', requireAuth, async (req, res) => {
         name:    c.name,
         members: c.members ? c.members.size : 0,
       }));
-    // Estado actual del bot en voz
-    const botVoice = guild.members.me?.voice?.channel;
-    res.json({ channels, currentChannel: botVoice ? { id: botVoice.id, name: botVoice.name } : null });
+
+    // Detectar canal de voz del bot — método 1: voice state del miembro
+    let currentChannel = null;
+    try {
+      const me = guild.members.me || await guild.members.fetchMe();
+      if (me?.voice?.channelId) {
+        const ch = guild.channels.cache.get(me.voice.channelId);
+        if (ch) currentChannel = { id: ch.id, name: ch.name };
+      }
+    } catch (_) {}
+
+    // Método 2: conexión activa de @discordjs/voice (más fiable)
+    if (!currentChannel) {
+      try {
+        const { getVoiceConnection } = require('@discordjs/voice');
+        const conn = getVoiceConnection(process.env.GUILD_ID);
+        if (conn && conn.joinConfig?.channelId) {
+          const ch = guild.channels.cache.get(conn.joinConfig.channelId);
+          if (ch) currentChannel = { id: ch.id, name: ch.name };
+        }
+      } catch (_) {}
+    }
+
+    res.json({ channels, currentChannel });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
