@@ -289,6 +289,178 @@ app.post('/api/security', requireAuth, requireAdmin, (req, res) => {
   }
 });
 
+// ── API: VOICE CHANNELS ───────────────────────────────────────────
+app.get('/api/voice-channels', requireAuth, async (req, res) => {
+  try {
+    const client = app.get('discordClient');
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID);
+    await guild.channels.fetch();
+    const channels = guild.channels.cache
+      .filter(c => c.type === 2) // GuildVoice
+      .sort((a, b) => a.position - b.position)
+      .map(c => ({
+        id:      c.id,
+        name:    c.name,
+        members: c.members ? c.members.size : 0,
+      }));
+    // Estado actual del bot en voz
+    const botVoice = guild.members.me?.voice?.channel;
+    res.json({ channels, currentChannel: botVoice ? { id: botVoice.id, name: botVoice.name } : null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── API: MOVE BOT TO VOICE ────────────────────────────────────────
+app.post('/api/voice/join', requireAuth, async (req, res) => {
+  if (!userManager.hasPermission(req.session.role, 'voice_control')) {
+    return res.status(403).json({ error: 'Solo el Developer puede controlar el bot en voz' });
+  }
+  try {
+    const { channelId } = req.body;
+    const { joinVoiceChannel } = require('@discordjs/voice');
+    const client = app.get('discordClient');
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID);
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel || channel.type !== 2) return res.status(404).json({ error: 'Canal de voz no encontrado' });
+    joinVoiceChannel({
+      channelId: channel.id,
+      guildId:   guild.id,
+      adapterCreator: guild.voiceAdapterCreator,
+      selfDeaf: false,
+      selfMute: true,
+    });
+    auditLogger.log('security', `Bot movido al canal de voz: #${channel.name} por ${req.session.username}`, { channelId });
+    res.json({ success: true, message: `Bot conectado a #${channel.name}` });
+  } catch (err) {
+    if (err.message?.includes('Cannot find module')) {
+      return res.status(501).json({ error: 'Instala @discordjs/voice: npm install @discordjs/voice' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/voice/leave', requireAuth, async (req, res) => {
+  if (!userManager.hasPermission(req.session.role, 'voice_control')) {
+    return res.status(403).json({ error: 'Solo el Developer puede controlar el bot en voz' });
+  }
+  try {
+    const { getVoiceConnection } = require('@discordjs/voice');
+    const connection = getVoiceConnection(process.env.GUILD_ID);
+    if (connection) { connection.destroy(); }
+    auditLogger.log('security', `Bot desconectado de voz por ${req.session.username}`, {});
+    res.json({ success: true, message: 'Bot desconectado del canal de voz' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── API: SERVER BACKUP ────────────────────────────────────────────
+app.get('/api/backup/create', requireAuth, async (req, res) => {
+  if (!userManager.hasPermission(req.session.role, 'server_backup')) {
+    return res.status(403).json({ error: 'Sin permiso para crear backups' });
+  }
+  try {
+    const client = app.get('discordClient');
+    const guild  = await client.guilds.fetch(process.env.GUILD_ID, { withCounts: true });
+    await guild.channels.fetch();
+    await guild.roles.fetch();
+
+    const backup = {
+      id:        Date.now(),
+      createdAt: new Date().toISOString(),
+      createdBy: req.session.username,
+      guild: {
+        name:             guild.name,
+        description:      guild.description,
+        premiumTier:      guild.premiumTier,
+        verificationLevel:guild.verificationLevel,
+      },
+      roles: guild.roles.cache
+        .filter(r => !r.managed && r.id !== guild.id)
+        .sort((a, b) => b.position - a.position)
+        .map(r => ({
+          name:        r.name,
+          color:       r.hexColor,
+          hoist:       r.hoist,
+          mentionable: r.mentionable,
+          permissions: r.permissions.bitfield.toString(),
+          position:    r.position,
+        })),
+      channels: guild.channels.cache
+        .sort((a, b) => a.position - b.position)
+        .map(c => ({
+          name:     c.name,
+          type:     c.type,
+          position: c.position,
+          topic:    c.topic || null,
+          nsfw:     c.nsfw || false,
+          parentId: c.parentId || null,
+        })),
+      security: require('../src/handlers/discordSecurity').getConfig(),
+      users:    require('../src/handlers/userManager').getAll().map(u => ({ ...u, password: undefined })),
+    };
+
+    // Guardar en archivo
+    const fs = require('fs');
+    const backupsDir = require('path').join(__dirname, '..', 'src', 'data', 'backups');
+    if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
+    const filename = `backup_${Date.now()}.json`;
+    fs.writeFileSync(require('path').join(backupsDir, filename), JSON.stringify(backup, null, 2));
+
+    auditLogger.log('security', `Backup del servidor creado por ${req.session.username}`, { filename });
+    res.json({ success: true, backup: { ...backup, channels: backup.channels.length, roles: backup.roles.length }, filename });
+  } catch (err) {
+    console.error('[backup]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/backup/list', requireAuth, async (req, res) => {
+  if (!userManager.hasPermission(req.session.role, 'server_backup')) {
+    return res.status(403).json({ error: 'Sin permiso' });
+  }
+  try {
+    const fs = require('fs');
+    const backupsDir = require('path').join(__dirname, '..', 'src', 'data', 'backups');
+    if (!fs.existsSync(backupsDir)) return res.json([]);
+    const files = fs.readdirSync(backupsDir).filter(f => f.endsWith('.json'));
+    const list = files.map(f => {
+      try {
+        const data = JSON.parse(fs.readFileSync(require('path').join(backupsDir, f), 'utf-8'));
+        return {
+          filename:  f,
+          id:        data.id,
+          createdAt: data.createdAt,
+          createdBy: data.createdBy,
+          guildName: data.guild?.name,
+          roleCount: data.roles?.length || 0,
+          channelCount: data.channels?.length || 0,
+        };
+      } catch { return null; }
+    }).filter(Boolean).sort((a,b) => b.id - a.id);
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/backup/:filename', requireAuth, async (req, res) => {
+  if (!userManager.hasPermission(req.session.role, 'server_backup')) {
+    return res.status(403).json({ error: 'Sin permiso' });
+  }
+  try {
+    const fs   = require('fs');
+    const p    = require('path');
+    const file = p.join(__dirname, '..', 'src', 'data', 'backups', req.params.filename);
+    if (!file.endsWith('.json') || !fs.existsSync(file)) return res.status(404).json({ error: 'Backup no encontrado' });
+    fs.unlinkSync(file);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── API: GUILD EMOJIS ─────────────────────────────────────────────
 app.get('/api/guild-emojis', requireAuth, async (req, res) => {
   try {

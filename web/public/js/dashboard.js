@@ -120,17 +120,30 @@ async function loadSession() {
   $('user-role').textContent  = d.role;
   $('user-avatar').textContent = d.username[0].toUpperCase();
 
-  if (d.role === 'admin') {
-    show('admin-section'); show('nav-users'); show('nav-security'); show('nav-logs');
-  } else if (d.permissions?.includes('view_logs')) {
-    show('nav-logs');
+  const isDev   = d.role === 'developer';
+  const isOwner = d.role === 'owner';
+  const isStaff = d.role === 'staff';
+
+  // Secciones admin: developer y owner ven todo
+  if (isDev || isOwner) {
+    show('admin-section'); show('nav-users'); show('nav-security');
+    show('nav-backup');
+  }
+  // Solo developer ve logs y control de voz
+  if (isDev) {
+    show('nav-logs'); show('nav-voice');
+  }
+  // Staff (ayudante) NO ve inicio, solo embeds y tickets
+  if (isStaff) {
+    $('nav-home')?.classList.add('hidden');
   }
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────
 const PAGE_TITLES = {
   home:'Inicio', embeds:'Enviar Embeds', editor:'Editor de Embeds',
-  tickets:'Tickets', users:'Usuarios', security:'Seguridad', logs:'Logs',
+  tickets:'Tickets', users:'Usuarios', security:'Seguridad',
+  logs:'Logs', voice:'Bot en Voz', backup:'Copia de Seguridad',
 };
 
 function showPage(name) {
@@ -145,6 +158,8 @@ function showPage(name) {
   if (name === 'users')    loadUsers();
   if (name === 'logs')     loadLogs();
   if (name === 'security') loadSecurity();
+  if (name === 'voice')    loadVoice();
+  if (name === 'backup')   loadBackups();
 }
 
 // ─── HOME ─────────────────────────────────────────────────────────────────
@@ -245,11 +260,13 @@ async function sendEmbed(type, btn) {
   d?.success ? toast('✅ ' + d.message, 'success') : toast('❌ ' + (d?.error||'Error'), 'error');
 }
 
-async function deployTicketEmbed() {
+async function deployTicketEmbed(mode = 'menu') {
   const cid = $('ticket-channel')?.value;
   if (!cid) { toast('⚠️ Selecciona un canal', 'warn'); return; }
-  const d = await api('/api/send-embed', 'POST', { channelId: cid, embedType: 'tickets' });
-  d?.success ? toast('✅ Sistema de tickets desplegado', 'success') : toast('❌ ' + (d?.error||'Error'), 'error');
+  const embedType = mode === 'menu' ? 'tickets_menu' : 'tickets';
+  const d = await api('/api/send-embed', 'POST', { channelId: cid, embedType });
+  if (d?.success) toast(`✅ Tickets (${mode === 'menu' ? 'menú' : 'botones'}) desplegados`, 'success');
+  else toast('❌ ' + (d?.error || 'Error'), 'error');
 }
 
 // ─── EDITOR TABS ──────────────────────────────────────────────────────────
@@ -807,22 +824,38 @@ function countChars(inputId, countId, max) {
 }
 
 // ─── USERS ────────────────────────────────────────────────────────────────
+const ROLE_LABELS = {
+  developer: { badge: 'b-developer', label: '⚡ Developer', perms: 'Acceso total absoluto' },
+  owner:     { badge: 'b-owner',     label: '👑 Dueño',     perms: 'Todo excepto logs' },
+  staff:     { badge: 'b-staff',     label: '👮 Ayudante',  perms: 'Embeds, tickets, enviar' },
+  viewer:    { badge: 'b-viewer',    label: '👁️ Viewer',   perms: 'Solo lectura' },
+  admin:     { badge: 'b-admin',     label: '🔑 Admin',     perms: 'Admin' },
+};
+
 async function loadUsers() {
   const users = await api('/api/users');
   if (!users) return;
   const tbody = $('users-tbody');
+  if (!tbody) return;
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--t3)">Sin usuarios</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--t3)">Sin usuarios registrados</td></tr>';
     return;
   }
-  tbody.innerHTML = users.map(u => `
-    <tr>
-      <td><strong>${escHtml(u.username)}</strong></td>
-      <td><span class="badge b-${u.role}">${u.role}</span></td>
-      <td class="t-sm t-muted">${u.role==='admin'?'Todo':u.role==='staff'?'Embeds, Tickets, Logs':'Vista'}</td>
-      <td class="t-sm t-muted">${new Date(u.createdAt).toLocaleDateString('es')}</td>
+  tbody.innerHTML = users.map(u => {
+    const r = ROLE_LABELS[u.role] || { badge: 'b-viewer', label: u.role, perms: '—' };
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--a1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${escHtml(u.username[0].toUpperCase())}</div>
+          <strong style="color:var(--t1)">${escHtml(u.username)}</strong>
+        </div>
+      </td>
+      <td><span class="badge ${r.badge}">${r.label}</span></td>
+      <td class="t-sm t-muted">${r.perms}</td>
+      <td class="t-sm t-muted mono">${new Date(u.createdAt).toLocaleDateString('es')}</td>
       <td><button class="btn btn-danger btn-xs btn-icon" onclick="deleteUser(${u.id},'${escHtml(u.username)}')" title="Eliminar">🗑️</button></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function createUser() {
@@ -1113,5 +1146,121 @@ document.addEventListener('DOMContentLoaded', () => {
     sbLogo.style.background = 'none';
     sbLogo.style.boxShadow  = 'none';
     sbLogo.style.padding    = '0';
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BOT EN VOZ
+   ═══════════════════════════════════════════════════════════════════════ */
+async function loadVoice() {
+  const data = await api('/api/voice-channels');
+  const list = $('voice-list');
+  if (!list) return;
+
+  // Status actual
+  const statusEl = $('voice-status');
+  if (data?.currentChannel && statusEl) {
+    statusEl.style.display = 'flex';
+    $('voice-current-ch').textContent = data.currentChannel.name;
+  } else if (statusEl) {
+    statusEl.style.display = 'none';
+  }
+
+  if (!data?.channels?.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-ico">🔊</div><p>No hay canales de voz en el servidor</p></div>';
+    return;
+  }
+
+  list.innerHTML = data.channels.map(ch => `
+    <div class="voice-ch-item">
+      <div class="voice-ch-name">
+        🔊 ${escHtml(ch.name)}
+        ${ch.members > 0 ? `<span class="badge b-active" style="font-size:10px">${ch.members} miembro${ch.members > 1 ? 's' : ''}</span>` : ''}
+      </div>
+      <div class="row-gap">
+        <span class="voice-ch-members">#${ch.id}</span>
+        <button class="btn btn-primary btn-sm" onclick="botJoinVoice('${ch.id}', '${escHtml(ch.name)}')">Conectar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function botJoinVoice(channelId, name) {
+  const d = await api('/api/voice/join', 'POST', { channelId });
+  if (d?.success) {
+    toast(`✅ Bot conectado en #${name}`, 'success');
+    loadVoice();
+  } else {
+    toast('❌ ' + (d?.error || 'Error'), 'error');
+  }
+}
+
+async function botLeaveVoice() {
+  const d = await api('/api/voice/leave', 'POST', {});
+  if (d?.success) { toast('✅ Bot desconectado', 'info'); loadVoice(); }
+  else toast('❌ ' + (d?.error || 'Error'), 'error');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COPIA DE SEGURIDAD
+   ═══════════════════════════════════════════════════════════════════════ */
+async function loadBackups() {
+  const list = await api('/api/backup/list');
+  const container = $('backup-list');
+  const countEl   = $('backup-count');
+  if (!container) return;
+  if (countEl) countEl.textContent = list?.length ?? '—';
+
+  if (!list?.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-ico">💾</div><p>No hay backups guardados aún</p></div>';
+    return;
+  }
+
+  container.innerHTML = list.map(b => `
+    <div class="backup-item">
+      <div class="backup-ico">💾</div>
+      <div class="backup-info">
+        <div class="backup-name">${escHtml(b.guildName || 'Servidor')} · ${new Date(b.createdAt).toLocaleString('es',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="backup-meta">
+          ${b.roleCount} roles · ${b.channelCount} canales · Creado por ${escHtml(b.createdBy)}
+        </div>
+      </div>
+      <div class="backup-actions">
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteBackup('${escHtml(b.filename)}')" title="Eliminar">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function createBackup() {
+  const btn = $('backup-btn-txt');
+  if (btn) btn.textContent = '⏳ Creando...';
+  const d = await api('/api/backup/create');
+  if (btn) btn.textContent = '+ Crear Backup';
+  if (d?.success) {
+    toast(`✅ Backup creado: ${d.data?.channels || '?'} canales, ${d.data?.roles || '?'} roles`, 'success');
+    loadBackups();
+  } else toast('❌ ' + (d?.error || 'Error'), 'error');
+}
+
+async function deleteBackup(filename) {
+  if (!confirm('¿Eliminar este backup?')) return;
+  const d = await api(`/api/backup/${encodeURIComponent(filename)}`, 'DELETE');
+  d?.success ? (toast('🗑️ Backup eliminado', 'info'), loadBackups()) : toast('❌ Error', 'error');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SIDEBAR LOGO CON IMAGEN REAL
+   ═══════════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  const sbLogo = document.querySelector('.sb-logo');
+  if (sbLogo && !sbLogo.querySelector('img')) {
+    sbLogo.innerHTML = `<img
+      src="https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg"
+      alt="HyperStock"
+      style="width:40px;height:40px;border-radius:10px;object-fit:cover;display:block"
+      draggable="false"
+      onerror="this.parentElement.innerHTML='⚡';this.parentElement.style.background='var(--a1)';this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.parentElement.style.fontSize='18px'"
+    />`;
   }
 });

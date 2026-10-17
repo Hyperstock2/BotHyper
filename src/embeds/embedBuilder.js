@@ -8,24 +8,25 @@ const {
 
 /**
  * Construye el embed y componentes según el tipo solicitado.
- * @param {string} type - tickets | metodos | diamantes | decoraciones | boosts
+ * @param {string} type - tickets | tickets_menu | metodos | diamantes | decoraciones | boosts
  * @returns {{ embed: EmbedBuilder, components: ActionRowBuilder[] }}
  */
 function buildEmbed(type) {
   switch (type) {
-    case 'tickets':   return buildTickets();
-    case 'metodos':   return buildMetodos();
-    case 'diamantes': return buildDiamantes();
+    case 'tickets':      return buildTickets('button');
+    case 'tickets_menu': return buildTickets('menu');
+    case 'metodos':      return buildMetodos();
+    case 'diamantes':    return buildDiamantes();
     case 'decoraciones': return buildDecoraciones();
-    case 'boosts':    return buildBoosts();
+    case 'boosts':       return buildBoosts();
     default: throw new Error(`Tipo de embed desconocido: ${type}`);
   }
 }
 
-// ── TICKETS ──────────────────────────────────────────────────────
-function buildTickets() {
+// ── TICKETS (botones O menú desplegable) ─────────────────────────
+function buildTickets(mode = 'button') {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.imgur.com/4M34hi2.png' })
+    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg' })
     .setTitle('Bienvenido al sistema de tickets de Hyper Stock')
     .setDescription(
       'Abre un ticket para comprar productos, recibir soporte o resolver dudas.\n\n' +
@@ -35,22 +36,37 @@ function buildTickets() {
       '• Espera a que un miembro del staff te atienda.\n\n' +
       '**Importante:** Hyper Stock no se hace responsable de problemas o acuerdos realizados fuera de nuestro equipo oficial.'
     )
-    .setColor(0x5865F2)
-    .setThumbnail('https://i.imgur.com/4M34hi2.png');
+    .setColor(0x2563EB)
+    .setThumbnail('https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg');
 
-  const selectMenu = new StringSelectMenuBuilder()
-    .setCustomId('ticket_select')
-    .setPlaceholder('Selecciona una opción')
-    .addOptions([
-      { label: 'Comprar Diamantes',      description: 'Recarga de diamantes Free Fire', value: 'ticket_diamantes',    emoji: '💎' },
-      { label: 'Comprar Boosts',         description: 'Boosts de Discord económicos',   value: 'ticket_boosts',       emoji: '⚡' },
-      { label: 'Decoraciones Discord',   description: 'Método decoraciones al 60%',     value: 'ticket_decoraciones', emoji: '🎨' },
-      { label: 'Métodos de Pago',        description: 'Consulta métodos disponibles',   value: 'ticket_metodos',      emoji: '💳' },
-      { label: 'Soporte General',        description: 'Dudas o problemas generales',    value: 'ticket_soporte',      emoji: '🛠️' },
-    ]);
+  const TICKET_OPTIONS = [
+    { label: 'Comprar Diamantes',    description: 'Recarga de diamantes Free Fire', value: 'ticket_diamantes',    emoji: '💎' },
+    { label: 'Comprar Boosts',       description: 'Boosts de Discord económicos',   value: 'ticket_boosts',       emoji: '⚡' },
+    { label: 'Decoraciones Discord', description: 'Método decoraciones al 60%',     value: 'ticket_decoraciones', emoji: '🎨' },
+    { label: 'Métodos de Pago',      description: 'Consulta métodos disponibles',   value: 'ticket_metodos',      emoji: '💳' },
+    { label: 'Soporte General',      description: 'Dudas o problemas generales',    value: 'ticket_soporte',      emoji: '🛠️' },
+  ];
 
-  const row = new ActionRowBuilder().addComponents(selectMenu);
-  return { embed, components: [row] };
+  if (mode === 'menu') {
+    // Modo: menú desplegable (StringSelectMenu)
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('ticket_select')
+      .setPlaceholder('Selecciona una opción')
+      .addOptions(TICKET_OPTIONS);
+    return { embed, components: [new ActionRowBuilder().addComponents(selectMenu)] };
+  }
+
+  // Modo: botones (hasta 5 por fila, máx 2 filas)
+  const row1 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('ticket_diamantes').setLabel('Diamantes').setStyle(ButtonStyle.Primary).setEmoji('💎'),
+    new ButtonBuilder().setCustomId('ticket_boosts').setLabel('Boosts').setStyle(ButtonStyle.Primary).setEmoji('⚡'),
+    new ButtonBuilder().setCustomId('ticket_decoraciones').setLabel('Decoraciones').setStyle(ButtonStyle.Secondary).setEmoji('🎨'),
+  );
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('ticket_metodos').setLabel('Métodos de Pago').setStyle(ButtonStyle.Secondary).setEmoji('💳'),
+    new ButtonBuilder().setCustomId('ticket_soporte').setLabel('Soporte').setStyle(ButtonStyle.Secondary).setEmoji('🛠️'),
+  );
+  return { embed, components: [row1, row2] };
 }
 
 // ── MÉTODOS DE PAGO ───────────────────────────────────────────────

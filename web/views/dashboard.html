@@ -8,9 +8,12 @@
   <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
-<!-- Ambient background -->
-<div class="ambient"><div class="orb orb-a"></div><div class="orb orb-b"></div></div>
+<div class="bg-particles">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
 <div class="mesh"></div>
+<div class="bg-wave"></div>
 
 <div class="app">
 
@@ -52,9 +55,13 @@
         <span class="nav-ico">📋</span> Logs
         <span class="nav-tag hidden" id="log-badge">●</span>
       </button>
+      <button class="nav-btn hidden" id="nav-voice" onclick="showPage('voice')">
+        <span class="nav-ico">🔊</span> Bot en Voz
+      </button>
+      <button class="nav-btn hidden" id="nav-backup" onclick="showPage('backup')">
+        <span class="nav-ico">💾</span> Copia de Seguridad
+      </button>
     </div>
-
-    <div class="sb-footer">
       <div class="user-chip">
         <div class="user-av" id="user-avatar">?</div>
         <div>
@@ -525,7 +532,13 @@
               <label class="label">Canal donde desplegar los tickets</label>
               <select class="select" id="ticket-channel"><option value="">Selecciona canal...</option></select>
             </div>
-            <button class="btn btn-primary btn-full mt-12" onclick="deployTicketEmbed()">🚀 Desplegar Sistema de Tickets</button>
+            <div class="field">
+              <label class="label">Tipo de componente</label>
+              <div class="g2" style="gap:8px;margin-top:4px">
+                <button class="btn btn-primary" onclick="deployTicketEmbed('button')">🔘 Con Botones</button>
+                <button class="btn btn-ghost" onclick="deployTicketEmbed('menu')">▾ Menú Desplegable</button>
+              </div>
+            </div>
           </div>
           <div class="card">
             <div class="card-hdr"><div class="card-title"><div class="card-icon">📋</div> Categorías Activas</div></div>
@@ -640,6 +653,74 @@
         </div>
       </div>
 
+      <!-- ══════════════════ VOZ ══════════════════ -->
+      <div class="page" id="page-voice">
+        <div class="section-hdr row">
+          <div>
+            <div class="page-title-h">🔊 Bot en Canales de Voz</div>
+            <div class="page-sub">Mueve el bot a cualquier canal de voz del servidor · Solo Developer</div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="botLeaveVoice()" id="btn-leave-voice">Desconectar Bot</button>
+        </div>
+
+        <div class="bot-voice-status" id="voice-status" style="display:none">
+          <div class="bot-voice-indicator"></div>
+          <span class="t-sm">Bot conectado en: <strong id="voice-current-ch">—</strong></span>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-icon">📡</div> Canales de Voz Disponibles</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadVoice()">↻ Actualizar</button>
+          </div>
+          <div class="voice-channels-list" id="voice-list">
+            <div class="empty-state"><div class="empty-ico">🔊</div><p>Cargando canales de voz...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════ BACKUP ══════════════════ -->
+      <div class="page" id="page-backup">
+        <div class="section-hdr row">
+          <div>
+            <div class="page-title-h">💾 Copia de Seguridad</div>
+            <div class="page-sub">Guarda la configuración completa del servidor: roles, canales y ajustes</div>
+          </div>
+          <button class="btn btn-primary" onclick="createBackup()" id="btn-create-backup">
+            <span id="backup-btn-txt">+ Crear Backup</span>
+          </button>
+        </div>
+
+        <div class="g2 mb-16">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">ℹ️</div> Qué se guarda</div></div>
+            <div class="info-list">
+              <div class="info-row"><span class="info-key">🎭 Roles</span><span class="badge b-active">Incluido</span></div>
+              <div class="info-row"><span class="info-key">📢 Canales</span><span class="badge b-active">Incluido</span></div>
+              <div class="info-row"><span class="info-key">🛡️ Config Seguridad</span><span class="badge b-active">Incluido</span></div>
+              <div class="info-row"><span class="info-key">👥 Usuarios Panel</span><span class="badge b-active">Incluido</span></div>
+              <div class="info-row"><span class="info-key">💬 Mensajes</span><span class="badge b-warn">No incluido</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title"><div class="card-icon">📊</div> Estadísticas</div></div>
+            <div class="info-list" id="backup-stats">
+              <div class="info-row"><span class="info-key">💾 Backups guardados</span><span class="info-val" id="backup-count">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title"><div class="card-icon">📁</div> Backups Guardados</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadBackups()">↻ Actualizar</button>
+          </div>
+          <div class="backup-list" id="backup-list">
+            <div class="empty-state"><div class="empty-ico">💾</div><p>No hay backups guardados aún</p></div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -652,11 +733,11 @@
     <div class="field"><label class="label">Contraseña</label><input class="input" type="password" id="new-password" placeholder="Contraseña segura"/></div>
     <div class="field"><label class="label">Rol</label>
       <select class="select" id="new-role">
-        <option value="staff">👮 Staff — Embeds, tickets y logs</option>
+        <option value="staff">👮 Ayudante — Embeds, tickets, enviar</option>
+        <option value="owner">👑 Dueño — Todo excepto logs</option>
+        <option value="developer">⚡ Developer — Acceso total absoluto</option>
         <option value="viewer">👁️ Viewer — Solo lectura</option>
-        <option value="admin">⚡ Admin — Acceso total</option>
-      </select>
-    </div>
+      </select>    </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancelar</button>
       <button class="btn btn-primary" onclick="createUser()">Crear Usuario</button>
