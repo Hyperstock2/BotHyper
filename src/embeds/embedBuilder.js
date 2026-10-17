@@ -6,28 +6,26 @@ const {
   ButtonStyle,
 } = require('discord.js');
 
-/**
- * Construye el embed y componentes según el tipo solicitado.
- * @param {string} type - tickets | tickets_menu | metodos | diamantes | decoraciones | boosts
- * @returns {{ embed: EmbedBuilder, components: ActionRowBuilder[] }}
- */
+// URL del logo — debe ser un host que Discord acepte (imgur, cdn.discordapp, etc.)
+const LOGO = 'https://cdn.discordapp.com/embed/avatars/0.png'; // fallback genérico
+// Si tienes el logo subido a imgur usa esa URL, ej: 'https://i.imgur.com/XXXX.png'
+
 function buildEmbed(type) {
   switch (type) {
-    case 'tickets':      return buildTickets('button');
-    case 'tickets_menu': return buildTickets('menu');
-    case 'metodos':      return buildMetodos();
-    case 'diamantes':    return buildDiamantes();
-    case 'decoraciones': return buildDecoraciones();
-    case 'boosts':       return buildBoosts();
+    case 'tickets':       return buildTickets('button');
+    case 'tickets_menu':  return buildTickets('menu');
+    case 'metodos':       return buildMetodos();
+    case 'diamantes':     return buildDiamantes();
+    case 'decoraciones':  return buildDecoraciones();
+    case 'boosts':        return buildBoosts();
     default: throw new Error(`Tipo de embed desconocido: ${type}`);
   }
 }
 
-// ── TICKETS (botones O menú desplegable) ─────────────────────────
-function buildTickets(mode = 'button') {
+// ── TICKETS ───────────────────────────────────────────────────────
+function buildTickets(mode = 'menu') {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg' })
-    .setTitle('Bienvenido al sistema de tickets de Hyper Stock')
+    .setTitle('🎫 Bienvenido al sistema de tickets de Hyper Stock')
     .setDescription(
       'Abre un ticket para comprar productos, recibir soporte o resolver dudas.\n\n' +
       '**Antes de abrir un ticket:**\n' +
@@ -36,10 +34,9 @@ function buildTickets(mode = 'button') {
       '• Espera a que un miembro del staff te atienda.\n\n' +
       '**Importante:** Hyper Stock no se hace responsable de problemas o acuerdos realizados fuera de nuestro equipo oficial.'
     )
-    .setColor(0x2563EB)
-    .setThumbnail('https://i.postimg.cc/3wbMrg35/a05e063b-f36c-4834-852f-801391431695.jpg');
+    .setColor(0x2563EB);
 
-  const TICKET_OPTIONS = [
+  const OPTIONS = [
     { label: 'Comprar Diamantes',    description: 'Recarga de diamantes Free Fire', value: 'ticket_diamantes',    emoji: '💎' },
     { label: 'Comprar Boosts',       description: 'Boosts de Discord económicos',   value: 'ticket_boosts',       emoji: '⚡' },
     { label: 'Decoraciones Discord', description: 'Método decoraciones al 60%',     value: 'ticket_decoraciones', emoji: '🎨' },
@@ -48,32 +45,28 @@ function buildTickets(mode = 'button') {
   ];
 
   if (mode === 'menu') {
-    // Modo: menú desplegable (StringSelectMenu)
-    const selectMenu = new StringSelectMenuBuilder()
+    const menu = new StringSelectMenuBuilder()
       .setCustomId('ticket_select')
       .setPlaceholder('Selecciona una opción')
-      .addOptions(TICKET_OPTIONS);
-    return { embed, components: [new ActionRowBuilder().addComponents(selectMenu)] };
+      .addOptions(OPTIONS);
+    return { embed, components: [new ActionRowBuilder().addComponents(menu)] };
   }
 
-  // Modo: botones (hasta 5 por fila, máx 2 filas)
+  // Botones — máx 5 por fila, 🛠️ puede dar problemas así que usamos texto limpio
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_diamantes').setLabel('Diamantes').setStyle(ButtonStyle.Primary).setEmoji('💎'),
-    new ButtonBuilder().setCustomId('ticket_boosts').setLabel('Boosts').setStyle(ButtonStyle.Primary).setEmoji('⚡'),
-    new ButtonBuilder().setCustomId('ticket_decoraciones').setLabel('Decoraciones').setStyle(ButtonStyle.Secondary).setEmoji('🎨'),
+    new ButtonBuilder().setCustomId('ticket_diamantes').setLabel('💎 Diamantes').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('ticket_boosts').setLabel('⚡ Boosts').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('ticket_decoraciones').setLabel('🎨 Decoraciones').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_metodos').setLabel('💳 Métodos').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_soporte').setLabel('🛠 Soporte').setStyle(ButtonStyle.Secondary),
   );
-  const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_metodos').setLabel('Métodos de Pago').setStyle(ButtonStyle.Secondary).setEmoji('💳'),
-    new ButtonBuilder().setCustomId('ticket_soporte').setLabel('Soporte').setStyle(ButtonStyle.Secondary).setEmoji('🛠️'),
-  );
-  return { embed, components: [row1, row2] };
+  return { embed, components: [row1] };
 }
 
 // ── MÉTODOS DE PAGO ───────────────────────────────────────────────
 function buildMetodos() {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'HyperStock Metodos', iconURL: 'https://i.imgur.com/4M34hi2.png' })
-    .setTitle('MÉTODOS DE PAGO')
+    .setTitle('💳 MÉTODOS DE PAGO')
     .setDescription(
       'Binance 🪙 • PayPal 💙\n' +
       'Yape 🇵🇪\n' +
@@ -82,9 +75,8 @@ function buildMetodos() {
       'Nequi 🇨🇴\n' +
       'Litecoin 💚'
     )
-    .setImage('https://i.imgur.com/4M34hi2.png') // reemplaza con tu imagen real
-    .setColor(0x5865F2)
-    .setFooter({ text: '» Metodos' });
+    .setColor(0x2563EB)
+    .setFooter({ text: '» Metodos — HyperStock' });
 
   return { embed, components: [] };
 }
@@ -92,8 +84,7 @@ function buildMetodos() {
 // ── DIAMANTES ─────────────────────────────────────────────────────
 function buildDiamantes() {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.imgur.com/4M34hi2.png' })
-    .setTitle('Venta De Diamantes')
+    .setTitle('💎 Venta De Diamantes')
     .setDescription(
       '🎁 **Diamantes Sin Previa Verificacion De ID**\n\n' +
       '🎁 No necesitamos tu cuenta, solamente tu ID\n' +
@@ -107,16 +98,14 @@ function buildDiamantes() {
       '💎 2180 + 218 Diamantes = S/.53\n' +
       '💎 5600 + 560 Diamantes = S/.125'
     )
-    .setImage('https://i.imgur.com/4M34hi2.png') // reemplaza con tu imagen real
-    .setColor(0x5865F2)
-    .setFooter({ text: '» Adquirir' });
+    .setColor(0x2563EB)
+    .setFooter({ text: '» Adquirir — HyperStock' });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('ticket_diamantes')
-      .setLabel('Adquirir')
+      .setLabel('💎 Adquirir')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('💎')
   );
 
   return { embed, components: [row] };
@@ -125,8 +114,7 @@ function buildDiamantes() {
 // ── DECORACIONES ──────────────────────────────────────────────────
 function buildDecoraciones() {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.imgur.com/4M34hi2.png' })
-    .setTitle('Método de Decoraciones al 60% de Descuento 🎁')
+    .setTitle('🎨 Método de Decoraciones al 60% de Descuento 🎁')
     .setDescription(
       '¿Te preguntas cómo funciona?\n\n' +
       '» El método consiste en adquirir decoraciones de Discord mediante regalos, pagando un 60% menos de su precio habitual.\n\n' +
@@ -136,16 +124,14 @@ function buildDecoraciones() {
       '¿Qué esperas para conseguir tus decoraciones a un precio más económico?\n\n' +
       '✅ **Adquiere el método completo y descubre cómo funciona.**'
     )
-    .setImage('https://i.imgur.com/4M34hi2.png') // reemplaza con tu imagen real
-    .setColor(0x9B59B6)
-    .setFooter({ text: '» Decoraciones' });
+    .setColor(0x9333EA)
+    .setFooter({ text: '» Decoraciones — HyperStock' });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('ticket_decoraciones')
-      .setLabel('Decoraciones')
+      .setLabel('🎨 Decoraciones')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji('🎨')
   );
 
   return { embed, components: [row] };
@@ -154,7 +140,7 @@ function buildDecoraciones() {
 // ── BOOSTS ────────────────────────────────────────────────────────
 function buildBoosts() {
   const embed = new EmbedBuilder()
-    .setAuthor({ name: 'Hyper Stock', iconURL: 'https://i.imgur.com/4M34hi2.png' })
+    .setTitle('⚡ Discord Boosts — HyperStock')
     .setDescription(
       '¿Cansado de pagar precios exagerados por los boosts de Discord? 🔨\n\n' +
       '¡Tengo la solución! 🎁\n\n' +
@@ -168,15 +154,14 @@ function buildBoosts() {
       'Abre un ticket indicando la cantidad de boosts que necesitas y la duración. Nuestro staff te informará del precio.\n\n' +
       '🔥 **¡Aprovecha estos precios!**'
     )
-    .setColor(0x5865F2)
-    .setFooter({ text: '» Boost' });
+    .setColor(0x2563EB)
+    .setFooter({ text: '» Boost — HyperStock' });
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('ticket_boosts')
-      .setLabel('Boost')
+      .setLabel('⚡ Boost')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('⚡')
   );
 
   return { embed, components: [row] };
